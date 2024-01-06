@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Setup Wizard &bull; StreamLurker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        ::-webkit-scrollbar { width: 0px; }
+        #open-streams:checked + span {
+            background: rgb(22, 163, 74);
+        }
+    </style>
+</head>
+<body class="bg-slate-800">
+<div id="setup_form">
+    <div class="p-3">
+        <div class="flex items-center justify-between">
+            <div class="flex flex-grow flex-col">
+                <h1 class="text-2xl font-semibold text-white">StreamLurker</h1>
+                <p class="text-sm font-medium text-gray-400">Written by EpicKitty</p>
+            </div>
+        </div>
+    </div>
+    <div class="p-3 space-y-12">
+        <a class="mt-1 text-sm leading-6 text-gray-200">Click Here to learn how to generate these credentials.</a>
+        <div class="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
+            <div class="col-span-6">
+                <label for="client_id" class="block text-sm font-medium leading-6 text-white">Twitch Client ID</label>
+                <div class="mt-2">
+                    <div class="flex rounded-md bg-white/5 ring-1 ring-inset ring-white/10 focus-within:ring-2 focus-within:ring-inset focus-within:ring-indigo-500">
+                        <input type="text" name="client_id" id="client_id" autocomplete="client_id" class="flex-1 border-0 bg-transparent px-4 py-2 text-white focus:ring-0 sm:text-sm sm:leading-6">
+                    </div>
+                </div>
+            </div>
+            <div class="col-span-6">
+                <label for="client_secret" class="block text-sm font-medium leading-6 text-white">Twitch Client Secret</label>
+                <div class="mt-2">
+                    <div class="flex rounded-md bg-white/5 ring-1 ring-inset ring-white/10 focus-within:ring-2 focus-within:ring-inset focus-within:ring-indigo-500">
+                        <input type="password" name="client_secret" id="client_secret" autocomplete="client_secret" class="flex-1 border-0 bg-transparent px-4 py-2 text-white focus:ring-0 sm:text-sm sm:leading-6">
+                    </div>
+                </div>
+            </div>
+            <div class="col-span-6">
+                <button id="submit" type="button" class="rounded-md bg-indigo-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500">Save</button>
+                <button id="help" type="button" class="rounded-md bg-slate-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-slate-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-500">Help</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="setup_guide" class="p-3 text-slate-200" style="display:none">
+    <h2 class="text-xl font-semibold mb-4">Generating Twitch API Credentials</h2>
+    <p class="mb-2">To use this application, you'll need to obtain your Twitch API credentials, including a Client ID and a Client Secret. Follow these steps:</p>
+
+    <ol class="list-decimal ml-8 mb-4">
+        <li class="mb-2">
+            <strong>Log in to Twitch Developer Console</strong>:
+            <ul class="list-disc ml-8">
+                <li>Visit the <a href="#" data-href="https://dev.twitch.tv/console" onclick="openLink(this)" class="text-blue-600 hover:text-blue-800">Twitch Developer Console</a>.</li>
+                <li>If you don't have a Twitch account, create one. Otherwise, log in.</li>
+            </ul>
+        </li>
+        <li class="mb-2">
+            <strong>Register Your Application</strong>:
+            <ul class="list-disc ml-8">
+                <li>Navigate to the "Applications" tab and click "+ Register Your Application".</li>
+                <li>Fill out the form:
+                    <ul class="list-circle ml-8">
+                        <li><strong>Name</strong>: Enter a name for your app.</li>
+                        <li><strong>OAuth Redirect URL</strong>: <code>http://localhost</code></li>
+                        <li><strong>Category</strong>: Analytics Tool.</li>
+                        <li><strong>Client Type</strong>: Confidential.</li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+        <li class="mb-2">
+            <strong>Get Your Credentials</strong>:
+            <ul class="list-disc ml-8">
+                <li>After registration, you'll see your <strong>Client ID</strong> in the dashboard.</li>
+                <li>Click "New Secret" to get your <strong>Client Secret</strong>. Keep this secret!</li>
+            </ul>
+        </li>
+        <li>
+            <strong>Enter Your Credentials</strong>:
+            <ul class="list-disc ml-8">
+                <li>Return to this setup page and enter your Client ID and Client Secret in the fields provided.</li>
+            </ul>
+        </li>
+    </ol>
+
+    <p class="text-sm text-red-400">Ensure you keep your Client Secret secure and never share it with others.</p>
+
+    <button id="back" type="button" class="rounded-md bg-slate-500 px-3 py-2 mt-5 text-sm font-semibold text-white shadow-sm hover:bg-slate-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-500">Back</button>
+</div>
+<script src="js/setup.js"></script>
+</body>
+</html>

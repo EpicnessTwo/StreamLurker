@@ -1,0 +1,44 @@
+{
+  "name": "StreamLurker",
+  "version": "1.0.0",
+  "description": "A Twitch Stream Lurking Tool",
+  "main": "index.js",
+  "scripts": {
+    "start": "electron .",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder"
+  },
+  "keywords": [],
+  "author": "EpicKitty",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.6.5",
+    "open": "^10.0.2"
+  },
+  "build": {
+    "appId": "epickitty.streamlurker",
+    "productName": "StreamLurker",
+    "win": {
+      "target": "nsis",
+      "icon": "Twitch_icon.png"
+    },
+    "files": [
+      "**/*",
+      "!config.*",
+      "!.*",
+      "!**/*.md",
+      "!**/*.{o,obj}",
+      "!**/node_modules/*/{CHANGELOG.md,README.md,README,readme.md,readme}",
+      "!**/node_modules/*/{test,__tests__,tests,powered-test,example,examples}",
+      "!**/node_modules/*.d.ts",
+      "!**/node_modules/.bin",
+      "!**/*.{spec,test}.{js,jsx,ts,tsx}",
+      "!**/test{,s}/**"
+    ]
+  },
+  "type": "module",
+  "devDependencies": {
+    "electron": "^28.1.1",
+    "electron-builder": "^24.9.1"
+  }
+}

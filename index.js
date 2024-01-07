@@ -2,8 +2,10 @@ import { app, BrowserWindow, ipcMain, Tray, Menu } from 'electron';
 import axios from 'axios';
 import open from 'open';
 import { existsSync, writeFile } from 'fs';
+import Store from 'electron-store';
+import path from 'path';
 
-let win, tray, configPath;
+let win, tray;
 let config = {
     "clientId": null,
     "clientSecret": null,
@@ -14,37 +16,44 @@ let config = {
 };
 const streamStatuses = {};
 
-if (app.isPackaged) {
-    // Path when app is compiled
-    configPath = './resources/config.json';
-} else {
-    // Path in development (relative to main.js or main process file)
-    configPath = './config.json';
-}
-console.log(configPath);
-
 async function loadConfig() {
-    if (existsSync(configPath)) {
-        try {
-            const module = await import(configPath, { assert: { type: 'json' } });
-            config = module.default;
-            return true;
-        } catch (error) {
-            console.error('Failed to load config:', error);
+    if (app.isPackaged) {
+        console.log('Loading config from store');
+        const store = new Store();
+        if (!store.has('config')) return false;
+        config = store.get('config');
+        return true;
+    } else {
+        if (existsSync('./config.json')) {
+            try {
+                const module = await import('./config.json', { assert: { type: 'json' } });
+                config = module.default;
+                return true;
+            } catch (error) {
+                console.error('Failed to load config:', error);
+                return false;
+            }
+        } else {
             return false;
         }
-    } else {
-        return false;
     }
 }
 
 async function saveConfig() {
-    try {
-        await writeFile(configPath, JSON.stringify(config, null, 4), 'utf8', () => { });
+    if (app.isPackaged) {
+        console.log('Saving config to store');
+        const store = new Store();
+        console.log(store)
+        store.set('config', config);
         return true;
-    } catch (error) {
-        console.error('Failed to save config:', error);
-        return false;
+    } else {
+        try {
+            await writeFile('./config.json', JSON.stringify(config, null, 4), 'utf8', () => { });
+            return true;
+        } catch (error) {
+            console.error('Failed to save config:', error);
+            return false;
+        }
     }
 }
 
@@ -68,7 +77,7 @@ function createWindow() {
 
     win.setMinimumSize(350, 200);
     if (!app.isPackaged) {
-        win.setIcon('lurker.png');
+        win.setIcon('./frontend/images/lurker.png');
     }
 
     loadConfig().then(configExists => {
@@ -88,10 +97,16 @@ function createWindow() {
 }
 
 function createTray() {
-    tray = new Tray('lurker.png'); // Path to your tray icon
+    let iconPath = './frontend/images/lurker.png';
+
+    if (app.isPackaged) {
+        iconPath = path.join(process.resourcesPath, 'app.asar', iconPath);
+    }
+
+    tray = new Tray(iconPath); // Path to your tray icon
 
     const contextMenu = Menu.buildFromTemplate([
-        { label: 'Stream Lurker', type: 'normal', enabled: false, icon: 'lurker.png' },
+        { label: 'Stream Lurker', type: 'normal', enabled: false, icon: iconPath },
         { type: 'separator' },
         { label: 'Open Repo', click: () => open('https://github.com/EpicnessTwo/StreamLurker') },
         { label: 'Report an Issue', click: () => open('https://github.com/EpicnessTwo/StreamLurker/issues') },

@@ -20,7 +20,7 @@
     "productName": "StreamLurker",
     "win": {
       "target": "nsis",
-      "icon": "lurker.png"
+      "icon": "./frontend/images/lurker_256.png"
     },
     "files": [
       "**/*",
@@ -39,6 +39,7 @@
   "type": "module",
   "devDependencies": {
     "electron": "^28.1.1",
-    "electron-builder": "^24.9.1"
+    "electron-builder": "^24.9.1",
+    "electron-store": "^8.1.0"
   }
 }

@@ -1,9 +1,9 @@
-import { app, BrowserWindow, ipcMain } from 'electron';
+import { app, BrowserWindow, ipcMain, Tray, Menu } from 'electron';
 import axios from 'axios';
 import open from 'open';
 import { existsSync, writeFile } from 'fs';
 
-let win;
+let win, tray, configPath;
 let config = {
     "clientId": null,
     "clientSecret": null,
@@ -12,7 +12,6 @@ let config = {
         'epickittyxp'
     ]
 };
-let configPath;
 const streamStatuses = {};
 
 if (app.isPackaged) {
@@ -59,6 +58,14 @@ function createWindow() {
         }
     });
 
+    win.on('close', (event) => {
+        if (!app.isQuitting) {
+            event.preventDefault();
+            win.hide();
+        }
+        return false;
+    });
+
     win.setMinimumSize(350, 200);
     if (!app.isPackaged) {
         win.setIcon('lurker.png');
@@ -77,6 +84,26 @@ function createWindow() {
         } else {
             win.loadFile('frontend/setup.html');
         }
+    });
+}
+
+function createTray() {
+    tray = new Tray('lurker.png'); // Path to your tray icon
+
+    const contextMenu = Menu.buildFromTemplate([
+        { label: 'Stream Lurker', type: 'normal', enabled: false, icon: 'lurker.png' },
+        { type: 'separator' },
+        { label: 'Open Repo', click: () => open('https://github.com/EpicnessTwo/StreamLurker') },
+        { label: 'Report an Issue', click: () => open('https://github.com/EpicnessTwo/StreamLurker/issues') },
+        { type: 'separator' },
+        { label: 'Quit Stream Lurker', click: () => app.quit() }
+    ]);
+
+    tray.setToolTip('Stream Lurker - Twitch stream status checker');
+    tray.setContextMenu(contextMenu);
+
+    tray.on('click', () => {
+        win.show();
     });
 }
 
@@ -206,8 +233,11 @@ async function deleteChannel(channel) {
 
 app.whenReady().then(() => {
     createWindow();
+    createTray();
     console.log('App is ready');
 });
+
+app.on('before-quit', () => app.isQuitting = true);
 
 app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') {

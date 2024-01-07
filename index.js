@@ -43,7 +43,6 @@ async function saveConfig() {
     if (app.isPackaged) {
         console.log('Saving config to store');
         const store = new Store();
-        console.log(store)
         store.set('config', config);
         return true;
     } else {
@@ -160,7 +159,6 @@ async function getChannelInfo(channelName, token) {
         const displayName = userResponse.data.data[0].display_name;
         const isLive = streamResponse.data.data.length > 0 && streamResponse.data.data[0].type === 'live';
         const profileImageUrl = userResponse.data.data[0].profile_image_url;
-        console.log(streamResponse.data.data);
         let viewerCount, gameName, isMature;
         if (isLive) {
             viewerCount = streamResponse.data.data[0].viewer_count || 0;

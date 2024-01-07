@@ -19,7 +19,6 @@ ipcRenderer.on('update-stream-status', (event, channel, isLive, profileImageUrl,
 });
 
 ipcRenderer.on('can-open-stream', (event, channel) => {
-    console.log('can-open-stream')
     if (localStorage.getItem('canOpenStreams') === 'enabled') openStream(channel);
 });
 

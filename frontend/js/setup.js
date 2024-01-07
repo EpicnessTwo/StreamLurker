@@ -1,7 +1,6 @@
 const { ipcRenderer } = require('electron');
 
 function saveTwitchCredentials() {
-    console.log('saveTwitchCredentials');
     const clientId = document.getElementById('client_id').value;
     const clientSecret = document.getElementById('client_secret').value;
 

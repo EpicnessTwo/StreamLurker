@@ -61,7 +61,7 @@ function createWindow() {
 
     win.setMinimumSize(350, 200);
     if (!app.isPackaged) {
-        win.setIcon('Twitch_icon.png');
+        win.setIcon('lurker.png');
     }
 
     loadConfig().then(configExists => {

@@ -20,7 +20,7 @@
     "productName": "StreamLurker",
     "win": {
       "target": "nsis",
-      "icon": "Twitch_icon.png"
+      "icon": "lurker.png"
     },
     "files": [
       "**/*",

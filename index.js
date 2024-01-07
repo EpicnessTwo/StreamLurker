@@ -63,13 +63,14 @@ function createWindow() {
     // win.setIcon('Twitch_icon.png');
 
     loadConfig().then(configExists => {
+        if (config.debugMode) {
+            win.webContents.openDevTools();
+        } else {
+            win.removeMenu();
+        }
+
         if (configExists) {
             win.loadFile('frontend/index.html');
-            if (config.debugMode) {
-                win.webContents.openDevTools();
-            } else {
-                win.removeMenu();
-            }
             checkStreams(true);
         } else {
             win.loadFile('frontend/setup.html');

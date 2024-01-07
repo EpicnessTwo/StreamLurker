@@ -25,6 +25,12 @@ ipcRenderer.on('can-open-stream', (event, channel) => {
 
 document.getElementById('addChannelButton').addEventListener('click', () => {
     document.getElementById('add-channel').style.display = 'block';
+    document.getElementById('channel_name').focus();
+});
+
+document.getElementById('close').addEventListener('click', () => {
+    document.getElementById('channel_name').value = '';
+    document.getElementById('add-channel').style.display = 'none';
 });
 
 document.getElementById('submitChannel').addEventListener('click', () => {
@@ -68,12 +74,14 @@ function updateStreamStatus(channel, status, imageUrl, viewerCount) {
     statusTemplate = document.getElementById(status ? 'status-online' : 'status-offline');
     channelStatus.innerHTML = statusTemplate.outerHTML;
     channelStatus.id = '';
+    channelDiv.querySelector('.channel-delete').setAttribute('title', 'Delete ' + channel);
 
     if (status) {
         viewerCountTemplate = document.getElementById('viewer-count');
         const viewerCountDiv = viewerCountTemplate.cloneNode(true);
         viewerCountDiv.id = '';
-        viewerCountDiv.querySelector('.count').textContent = viewerCount;
+        viewerCountDiv.querySelector('.count').textContent = formatNumber(viewerCount) + " viewers";
+        viewerCountDiv.querySelector('.count').setAttribute('data-count', viewerCount);
         channelStatus.appendChild(viewerCountDiv);
     }
 
@@ -86,8 +94,8 @@ function updateStreamStatus(channel, status, imageUrl, viewerCount) {
 
     const onlineStreams = Array.from(onlineStreamsContainer.children);
     onlineStreams.sort((a, b) => {
-        const aCount = parseInt(a.querySelector('.count').textContent);
-        const bCount = parseInt(b.querySelector('.count').textContent);
+        const aCount = parseInt(a.querySelector('.count').getAttribute('data-count'));
+        const bCount = parseInt(b.querySelector('.count').getAttribute('data-count'));
         return bCount - aCount;
     });
     onlineStreams.forEach(stream => onlineStreamsContainer.appendChild(stream));
@@ -99,6 +107,15 @@ function updateStreamStatus(channel, status, imageUrl, viewerCount) {
         return aName.localeCompare(bName);
     });
     offlineStreams.forEach(stream => offlineStreamsContainer.appendChild(stream));
+}
+
+function formatNumber(number) {
+    number = number.toFixed(0);
+    var rgx = /(\d+)(\d{3})/;
+    while (rgx.test(number)) {
+        number = number.replace(rgx, '$1' + ',' + '$2');
+    }
+    return number;
 }
 
 function openStream(channel) {

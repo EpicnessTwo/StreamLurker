@@ -60,7 +60,9 @@ function createWindow() {
     });
 
     win.setMinimumSize(350, 200);
-    // win.setIcon('Twitch_icon.png');
+    if (!app.isPackaged) {
+        win.setIcon('Twitch_icon.png');
+    }
 
     loadConfig().then(configExists => {
         if (config.debugMode) {

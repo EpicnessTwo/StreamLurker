@@ -160,10 +160,15 @@ async function getChannelInfo(channelName, token) {
         const displayName = userResponse.data.data[0].display_name;
         const isLive = streamResponse.data.data.length > 0 && streamResponse.data.data[0].type === 'live';
         const profileImageUrl = userResponse.data.data[0].profile_image_url;
-        let viewerCount;
-        if (isLive) viewerCount = streamResponse.data.data[0].viewer_count || 0;
+        console.log(streamResponse.data.data);
+        let viewerCount, gameName, isMature;
+        if (isLive) {
+            viewerCount = streamResponse.data.data[0].viewer_count || 0;
+            gameName = streamResponse.data.data[0].game_name;
+            isMature = streamResponse.data.data[0].is_mature;
+        }
 
-        return { displayName, isLive, profileImageUrl, viewerCount };
+        return { displayName, isLive, profileImageUrl, viewerCount, gameName, isMature };
     } catch (error) {
         console.error(`Error fetching info for ${channelName}:`, error);
         return { channelName, isLive: false, profileImageUrl: null, viewerCount: 0 };
@@ -193,8 +198,8 @@ async function checkStreams(start) {
 async function processStreams(token) {
     for (const channel of config.channels) {
         // Inside your setInterval in checkStreams function
-        const { displayName, isLive, profileImageUrl, viewerCount } = await getChannelInfo(channel, token);
-        win.webContents.send('update-stream-status', displayName, isLive, profileImageUrl, viewerCount);
+        const { displayName, isLive, profileImageUrl, viewerCount, gameName, isMature } = await getChannelInfo(channel, token);
+        win.webContents.send('update-stream-status', displayName, isLive, profileImageUrl, viewerCount, gameName, isMature);
 
         if (isLive && !streamStatuses[channel]) {
             console.log(`${channel} is live!`);

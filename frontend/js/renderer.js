@@ -14,8 +14,8 @@ if (localStorage.getItem('canOpenStreams') === null) {
 
 document.getElementById('open-streams').checked = localStorage.getItem('canOpenStreams') === 'enabled';
 
-ipcRenderer.on('update-stream-status', (event, channel, isLive, profileImageUrl, viewerCount) => {
-    updateStreamStatus(channel, isLive, profileImageUrl, viewerCount);
+ipcRenderer.on('update-stream-status', (event, channel, isLive, profileImageUrl, viewerCount, gameName, isMature) => {
+    updateStreamStatus(channel, isLive, profileImageUrl, viewerCount, gameName, isMature);
 });
 
 ipcRenderer.on('can-open-stream', (event, channel) => {
@@ -45,7 +45,7 @@ document.getElementById('submitChannel').addEventListener('click', () => {
     }
 });
 
-function updateStreamStatus(channel, status, imageUrl, viewerCount) {
+function updateStreamStatus(channel, status, imageUrl, viewerCount, gameName, isMature) {
     const channelId = channel.toLowerCase();
     let channelDiv = document.getElementById(channelId);
     let statusTemplate;
@@ -65,8 +65,15 @@ function updateStreamStatus(channel, status, imageUrl, viewerCount) {
     }
 
     const channelName = channelDiv.querySelector('.channel-name');
-    const channelImage = channelDiv.querySelector('.channel-image');
     channelName.textContent = channel;
+
+    if (isMature) {
+        const mature = document.getElementById('mature').cloneNode(true);
+        mature.id = '';
+        channelName.appendChild(mature);
+    }
+
+    const channelImage = channelDiv.querySelector('.channel-image');
     channelImage.style.backgroundImage = `url('${imageUrl}')`;
     channelImage.style.backgroundSize = 'cover';
 
@@ -74,8 +81,12 @@ function updateStreamStatus(channel, status, imageUrl, viewerCount) {
     statusTemplate = document.getElementById(status ? 'status-online' : 'status-offline');
     channelStatus.innerHTML = statusTemplate.outerHTML;
     channelStatus.id = '';
+
     channelDiv.querySelector('.channel-delete').setAttribute('title', 'Delete ' + channel);
 
+    const gameNameDiv = channelDiv.querySelector('.channel-playing');
+
+    let viewerCountTemplate;
     if (status) {
         viewerCountTemplate = document.getElementById('viewer-count');
         const viewerCountDiv = viewerCountTemplate.cloneNode(true);
@@ -83,6 +94,10 @@ function updateStreamStatus(channel, status, imageUrl, viewerCount) {
         viewerCountDiv.querySelector('.count').textContent = formatNumber(viewerCount) + " viewers";
         viewerCountDiv.querySelector('.count').setAttribute('data-count', viewerCount);
         channelStatus.appendChild(viewerCountDiv);
+
+        gameNameDiv.textContent = gameName;
+    } else {
+        gameNameDiv.textContent = '';
     }
 
     // Check if the stream is in the correct container, move if not

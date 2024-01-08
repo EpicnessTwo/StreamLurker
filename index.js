@@ -1,6 +1,5 @@
-import { app, BrowserWindow, ipcMain, Tray, Menu } from 'electron';
+import { app, BrowserWindow, ipcMain, Tray, Menu, shell } from 'electron';
 import axios from 'axios';
-import open from 'open';
 import { existsSync, writeFile } from 'fs';
 import Store from 'electron-store';
 import path from 'path';
@@ -107,8 +106,8 @@ function createTray() {
     const contextMenu = Menu.buildFromTemplate([
         { label: 'Stream Lurker', type: 'normal', enabled: false, icon: iconPath },
         { type: 'separator' },
-        { label: 'Open Repo', click: () => open('https://github.com/EpicnessTwo/StreamLurker') },
-        { label: 'Report an Issue', click: () => open('https://github.com/EpicnessTwo/StreamLurker/issues') },
+        { label: 'Open Repo', click: () => shell.openExternal('https://github.com/EpicnessTwo/StreamLurker') },
+        { label: 'Report an Issue', click: () => shell.openExternal('https://github.com/EpicnessTwo/StreamLurker/issues') },
         { type: 'separator' },
         { label: 'Quit Stream Lurker', click: () => app.quit() }
     ]);
@@ -177,12 +176,13 @@ async function checkStreams(start) {
     const token = await getOAuthToken();
     if (!token) return;
 
-    config.channels.forEach(channel => {
-        streamStatuses[channel] = false;
-        if (start) {
-            win.webContents.send('update-stream-status', channel.toLowerCase(), false, null, 0);
-        }
-    });
+    if (start) {
+        // If this was triggered by the main thead, pre-populate the stream data
+        config.channels.forEach(channel => {
+                streamStatuses[channel] = false;
+                win.webContents.send('update-stream-status', channel.toLowerCase(), false, null, 0);
+        });
+    }
 
     await processStreams(token)
 
@@ -301,5 +301,5 @@ ipcMain.on('delete-channel', (event, channel) => {
 
 ipcMain.on('open-link', (event, href) => {
     console.log(`Front end has requested to open ${href}`);
-    open(href);
+    shell.openExternal(href);
 });

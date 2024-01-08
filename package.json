@@ -13,7 +13,7 @@
   "license": "MIT",
   "dependencies": {
     "axios": "^1.6.5",
-    "open": "^10.0.2"
+    "electron-store": "^8.1.0"
   },
   "build": {
     "appId": "epickitty.streamlurker",
@@ -39,7 +39,6 @@
   "type": "module",
   "devDependencies": {
     "electron": "^28.1.1",
-    "electron-builder": "^24.9.1",
-    "electron-store": "^8.1.0"
+    "electron-builder": "^24.9.1"
   }
 }

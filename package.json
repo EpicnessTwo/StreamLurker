@@ -9,7 +9,11 @@
     "dist": "electron-builder"
   },
   "keywords": [],
-  "author": "EpicKitty",
+  "author": {
+    "name": "EpicKitty",
+    "email": "contact@epickitty.uk",
+    "url": "https://richardbowey.co.uk"
+  },
   "license": "MIT",
   "dependencies": {
     "axios": "^1.6.5",

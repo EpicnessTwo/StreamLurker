@@ -1,6 +1,6 @@
 {
   "name": "StreamLurker",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A Twitch Stream Lurking Tool",
   "main": "index.js",
   "scripts": {

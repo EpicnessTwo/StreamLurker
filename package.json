@@ -24,7 +24,7 @@
     },
     "mac": {
       "target": "dmg",
-      "icon": "./frontend/images/lurker_256.png"
+      "icon": "./frontend/images/lurker_512.png"
     },
     "linux": {
       "target": "deb",

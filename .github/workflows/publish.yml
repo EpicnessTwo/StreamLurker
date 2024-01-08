@@ -22,6 +22,12 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
+      - name: Upload Linux Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: electron-linux-artifact
+          path: dist/*.deb
+
   electron-windows:
     runs-on: windows-latest
 
@@ -45,7 +51,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: electron-windows-artifact
-          path: dist/
+          path: dist/*Setup*.exe
 
   electron-mac:
     runs-on: macos-latest
@@ -65,3 +71,9 @@ jobs:
         run: npm run dist
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
+
+      - name: Upload MacOS Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: electron-macos-artifact
+          path: dist/*.dmg

@@ -1,5 +1,6 @@
 # StreamLurker - A Twitch Lurk Client
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/EpicnessTwo/StreamLurker)
+[![Electron Builder](https://github.com/EpicnessTwo/StreamLurker/actions/workflows/publish.yml/badge.svg)](https://github.com/EpicnessTwo/StreamLurker/actions/workflows/publish.yml)
 
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/U7U1RLHUW)
 
@@ -35,3 +36,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
+
+## Credits and Attribution
+
+ - [FlatIcon](https://www.flaticon.com/free-icon/lurker_2041070) for the logo

@@ -22,6 +22,14 @@
       "target": "nsis",
       "icon": "./frontend/images/lurker_256.png"
     },
+    "mac": {
+      "target": "dmg",
+      "icon": "./frontend/images/lurker_256.png"
+    },
+    "linux": {
+      "target": "deb",
+      "icon": "./frontend/images/lurker_256.png"
+    },
     "files": [
       "**/*",
       "!config.*",

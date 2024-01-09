@@ -14,6 +14,9 @@ let config = {
     ]
 };
 const streamStatuses = {};
+const gotTheLock = app.requestSingleInstanceLock({
+    locked: true
+})
 
 async function loadConfig() {
     if (app.isPackaged) {
@@ -250,6 +253,11 @@ async function deleteChannel(channel) {
 }
 
 app.whenReady().then(() => {
+    if (!gotTheLock) {
+        app.quit(); // Don't allow multiple instances
+        return;
+    }
+
     createWindow();
     createTray();
     console.log('App is ready');

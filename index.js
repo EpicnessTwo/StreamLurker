@@ -137,6 +137,7 @@ async function getOAuthToken() {
         return response.data.access_token;
     } catch (error) {
         console.error('Error fetching OAuth token:', error);
+        await apiError();
         return null;
     }
 }
@@ -259,6 +260,11 @@ async function deleteChannel(channel) {
     } else {
         console.log(`${channelName} removed from config`);
     }
+}
+
+async function apiError() {
+    await win.loadFile('frontend/setup.html');
+    win.webContents.send('failed-credentials');
 }
 
 app.whenReady().then(() => {

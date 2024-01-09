@@ -26,3 +26,7 @@ document.getElementById('back').addEventListener('click', () => {
     document.getElementById('setup_form').style.display = 'block';
     document.getElementById('setup_guide').style.display = 'none';
 });
+
+ipcRenderer.on('failed-credentials', () => {
+    document.getElementById('apiError').classList.remove('hidden');
+});

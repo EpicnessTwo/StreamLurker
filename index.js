@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, Tray, Menu, shell, Notification } from 'electron';
+import { app, BrowserWindow, ipcMain, Tray, Menu, shell, Notification, nativeTheme } from 'electron';
 import axios from 'axios';
 import { existsSync, writeFile } from 'fs';
 import Store from 'electron-store';
@@ -9,6 +9,7 @@ let config = {
     "clientId": null,
     "clientSecret": null,
     "debugMode": false,
+    "themeSource": 'dark',
     "channels": [
         'epickittyxp'
     ]
@@ -273,6 +274,8 @@ app.whenReady().then(() => {
         return;
     }
 
+    nativeTheme.themeSource = config.themeSource;
+
     createWindow();
     createTray();
     console.log('App is ready');
@@ -293,6 +296,12 @@ app.on('activate', () => {
 });
 
 // Listeners from the frontend
+
+ipcMain.on('change-theme', (event, theme) => {
+    nativeTheme.themeSource = theme;
+    config.themeSource = theme;
+    saveConfig();
+});
 
 ipcMain.on('save-twitch-credentials', (event, client_id, client_secret) => {
     config.clientId = client_id;

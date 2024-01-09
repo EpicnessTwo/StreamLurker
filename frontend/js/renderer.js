@@ -2,6 +2,20 @@ const { ipcRenderer } = require('electron');
 const onlineStreamsContainer = document.getElementById('online-channels');
 const offlineStreamsContainer = document.getElementById('offline-channels');
 
+// Dark Mode Toggle
+document.getElementById('dark-mode').addEventListener('change', () => {
+    localStorage.setItem('darkMode', document.getElementById('dark-mode').checked ? 'enabled' : 'disabled');
+    ipcRenderer.send('change-theme', document.getElementById('dark-mode').checked ? 'dark' : 'light');
+});
+
+if (localStorage.getItem('darkMode') === 'enabled') {
+    ipcRenderer.send('change-theme', 'dark');
+    document.getElementById('dark-mode').checked = true;
+} else {
+    ipcRenderer.send('change-theme', 'light');
+    document.getElementById('dark-mode').checked = false;
+}
+
 
 document.getElementById('open-streams').addEventListener('change', () => {
     localStorage.setItem('canOpenStreams', document.getElementById('open-streams').checked ? 'enabled' : 'disabled');

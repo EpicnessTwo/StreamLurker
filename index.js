@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, Tray, Menu, shell } from 'electron';
+import { app, BrowserWindow, ipcMain, Tray, Menu, shell, Notification } from 'electron';
 import axios from 'axios';
 import { existsSync, writeFile } from 'fs';
 import Store from 'electron-store';
@@ -14,6 +14,7 @@ let config = {
     ]
 };
 const streamStatuses = {};
+const notificationTitle = 'Stream Lurker';
 const gotTheLock = app.requestSingleInstanceLock({
     locked: true
 })
@@ -204,9 +205,17 @@ async function processStreams(token) {
 
         if (isLive && !streamStatuses[channel]) {
             console.log(`${channel} is live!`);
+            new Notification({
+                title: notificationTitle,
+                body: `${displayName} is live!`
+            }).show();
             win.webContents.send('can-open-stream', channel);
         } else if (!isLive && streamStatuses[channel]) {
             console.log(`${channel} is offline!`);
+            new Notification({
+                title: notificationTitle,
+                body: `${displayName} is offline!`
+            }).show();
         }
 
         streamStatuses[channel] = isLive;

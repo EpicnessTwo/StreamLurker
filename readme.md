@@ -1,13 +1,13 @@
 # StreamLurker - A Twitch Lurk Client
 ![Stream Lurker Interface](.github/images/streamlurker.png)
 
-![GitHub release (latest by date)](https://img.shields.io/github/v/release/EpicnessTwo/StreamLurker)
+[![GitHub release (latest by date)](https://img.shields.io/github/v/release/EpicnessTwo/StreamLurker)](https://github.com/EpicnessTwo/StreamLurker/releases)
 [![Electron Builder](https://github.com/EpicnessTwo/StreamLurker/actions/workflows/build.yml/badge.svg)](https://github.com/EpicnessTwo/StreamLurker/actions/workflows/publish.yml)
-![GitHub issues](https://img.shields.io/github/issues-raw/EpicnessTwo/StreamLurker)
-![GitHub closed issues](https://img.shields.io/github/issues-closed-raw/EpicnessTwo/StreamLurker)
+[![GitHub issues](https://img.shields.io/github/issues-raw/EpicnessTwo/StreamLurker)](https://github.com/EpicnessTwo/StreamLurker/issues)
+[![GitHub closed issues](https://img.shields.io/github/issues-closed-raw/EpicnessTwo/StreamLurker)](https://github.com/EpicnessTwo/StreamLurker/issues?q=is%3Aissue+is%3Aclosed)
 
 
-[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/U7U1RLHUW)
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/EpicKitty)
 
 > Whilst this client is mostly functional, it is still in development and may have bugs. Please report any bugs you find to the [issues](https://github.com/EpicnessTwo/StreamLurker/issues) page.
 

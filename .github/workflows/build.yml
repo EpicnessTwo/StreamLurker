@@ -42,8 +42,6 @@ jobs:
 
       - name: Package
         run: npm run dist
-        env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
       - name: Upload Windows Artifact
         uses: actions/upload-artifact@v2
@@ -67,8 +65,6 @@ jobs:
 
       - name: Package
         run: npm run dist
-        env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
       - name: Upload MacOS Artifact
         uses: actions/upload-artifact@v2

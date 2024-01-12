@@ -19,21 +19,24 @@ if (localStorage.getItem('darkMode') === 'enabled') {
 
 document.getElementById('open-streams').addEventListener('change', () => {
     localStorage.setItem('canOpenStreams', document.getElementById('open-streams').checked ? 'enabled' : 'disabled');
+    ipcRenderer.send('change-open-streams', document.getElementById('open-streams').checked);
 });
 
 if (localStorage.getItem('canOpenStreams') === null) {
     localStorage.setItem('canOpenStreams', 'disabled');
     document.getElementById('open-streams').checked = false;
+    ipcRenderer.send('change-open-streams', document.getElementById('open-streams').checked);
 }
 
 document.getElementById('open-streams').checked = localStorage.getItem('canOpenStreams') === 'enabled';
+ipcRenderer.send('change-open-streams', document.getElementById('open-streams').checked);
 
-ipcRenderer.on('update-stream-status', (event, channel, isLive, profileImageUrl, viewerCount, gameName, isMature) => {
-    updateStreamStatus(channel, isLive, profileImageUrl, viewerCount, gameName, isMature);
+ipcRenderer.on('update-streams', (event, streamStatuses) => {
+    updateStreamTiles(streamStatuses);
 });
 
-ipcRenderer.on('can-open-stream', (event, channel) => {
-    if (localStorage.getItem('canOpenStreams') === 'enabled') openStream(channel);
+ipcRenderer.on('is-syncing', (event, status) => {
+    document.getElementById('syncing').classList.toggle('opacity-100', status);
 });
 
 document.getElementById('addChannelButton').addEventListener('click', () => {
@@ -54,11 +57,26 @@ document.getElementById('submitChannel').addEventListener('click', () => {
     document.getElementById('add-channel').style.display = 'none';
 
     if (!document.getElementById(channel)) {
+        updateStreamTile(channel, false, '', 0, '', false);
         ipcRenderer.send('add-channel', channel);
     }
 });
 
-function updateStreamStatus(channel, status, imageUrl, viewerCount, gameName, isMature) {
+function updateStreamTiles(streamStatuses) {
+    const channels = Object.keys(streamStatuses);
+    channels.forEach(channel => {
+        const displayName = streamStatuses[channel].displayName;
+        const status = streamStatuses[channel].isLive;
+        const imageUrl = streamStatuses[channel].profileImageUrl;
+        const viewerCount = streamStatuses[channel].viewerCount;
+        const gameName = streamStatuses[channel].gameName;
+        const isMature = streamStatuses[channel].isMature;
+        updateStreamTile(channel, displayName, status, imageUrl, viewerCount, gameName, isMature);
+    });
+    sortStreams();
+}
+
+function updateStreamTile(channel, displayName, status, imageUrl, viewerCount, gameName, isMature) {
     const channelId = channel.toLowerCase();
     let channelDiv = document.getElementById(channelId);
     let statusTemplate;
@@ -78,7 +96,7 @@ function updateStreamStatus(channel, status, imageUrl, viewerCount, gameName, is
     }
 
     const channelName = channelDiv.querySelector('.channel-name');
-    channelName.textContent = channel;
+    channelName.textContent = displayName;
 
     if (isMature) {
         const mature = document.getElementById('mature').cloneNode(true);
@@ -119,7 +137,9 @@ function updateStreamStatus(channel, status, imageUrl, viewerCount, gameName, is
     } else if (!status && channelDiv.parentElement !== offlineStreamsContainer) {
         offlineStreamsContainer.appendChild(channelDiv);
     }
+}
 
+function sortStreams() {
     const onlineStreams = Array.from(onlineStreamsContainer.children);
     onlineStreams.sort((a, b) => {
         const aCount = parseInt(a.querySelector('.count').getAttribute('data-count'));
@@ -158,4 +178,4 @@ function deleteChannel(channel) {
 }
 
 // When the page loads, ask the backend to check the streams
-ipcRenderer.send('check-streams');
+ipcRenderer.send('fetch-streams');

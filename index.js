@@ -6,9 +6,11 @@ import path from 'path';
 
 let win, tray;
 let config = {
+    "initialised": false,
     "clientId": null,
     "clientSecret": null,
     "debugMode": false,
+    "canOpenStreams": false,
     "themeSource": 'dark',
     "channels": [
         'epickittyxp'
@@ -19,7 +21,12 @@ const notificationTitle = 'Stream Lurker';
 const gotTheLock = app.requestSingleInstanceLock({
     locked: true
 })
+const gotTheLock = app.requestSingleInstanceLock();
 
+/**
+ * Loads the config from the store or config.json
+ * @returns {Promise<boolean>}
+ */
 async function loadConfig() {
     if (app.isPackaged) {
         console.log('Loading config from store');
@@ -43,7 +50,12 @@ async function loadConfig() {
     }
 }
 
+/**
+ * Saves the config to the store or config.json
+ * @returns {Promise<boolean>}
+ */
 async function saveConfig() {
+    config.initialised = true;
     if (app.isPackaged) {
         console.log('Saving config to store');
         const store = new Store();
@@ -60,6 +72,9 @@ async function saveConfig() {
     }
 }
 
+/**
+ * Creates the main window
+ */
 function createWindow() {
     win = new BrowserWindow({
         width: 900,
@@ -99,6 +114,9 @@ function createWindow() {
     });
 }
 
+/**
+ * Creates the tray icon
+ */
 function createTray() {
     let iconPath = './frontend/images/lurker.png';
 
@@ -125,6 +143,10 @@ function createTray() {
     });
 }
 
+/**
+ * Gets an OAuth token from Twitch
+ * @returns {Promise<*|null>}
+ */
 async function getOAuthToken() {
     try {
         const response = await axios.post('https://id.twitch.tv/oauth2/token', null, {
@@ -143,6 +165,12 @@ async function getOAuthToken() {
     }
 }
 
+/**
+ * Gets the stream info for a channel
+ * @param channelName
+ * @param token
+ * @returns {Promise<{isLive: boolean, gameName, displayName: *, isMature, viewerCount: (*|number), profileImageUrl: *}|{isLive: boolean, channelName, viewerCount: number, profileImageUrl: null}>}
+ */
 async function getChannelInfo(channelName, token) {
     try {
         // Fetch stream info
@@ -182,37 +210,47 @@ async function checkStreams(start) {
     const token = await getOAuthToken();
     if (!token) return;
 
-    if (start) {
-        // If this was triggered by the main thead, pre-populate the stream data
-        config.channels.forEach(channel => {
-                streamStatuses[channel] = false;
-                win.webContents.send('update-stream-status', channel.toLowerCase(), false, null, 0);
-        });
-    }
-
-    await processStreams(token)
+    await processStreams(token);
 
     if (start) {
         setInterval(async () => {
-            await processStreams(token)
+            await processStreams(token);
         }, 60000); // Check every minute
     }
 }
 
+/**
+ * Sets whether streams can be opened
+ * @param status
+ * @returns {Promise<void>}
+ */
+async function canOpenStreams(status) {
+    console.log('Setting canOpenStreams to', status);
+    config.canOpenStreams = status;
+    saveConfig();
+}
+
 async function processStreams(token) {
+    await isSyncing(true);
     for (const channel of config.channels) {
         // Inside your setInterval in checkStreams function
         const { displayName, isLive, profileImageUrl, viewerCount, gameName, isMature } = await getChannelInfo(channel, token);
-        win.webContents.send('update-stream-status', displayName, isLive, profileImageUrl, viewerCount, gameName, isMature);
+        streamStatuses[channel] = streamStatuses[channel] || {};
+        streamStatuses[channel].displayName = displayName;
+        streamStatuses[channel].profileImageUrl = profileImageUrl;
+        streamStatuses[channel].viewerCount = viewerCount;
+        streamStatuses[channel].gameName = gameName;
+        streamStatuses[channel].isMature = isMature;
 
-        if (isLive && !streamStatuses[channel]) {
+        if (isLive && !streamStatuses[channel].isLive) {
             console.log(`${channel} is live!`);
             new Notification({
                 title: notificationTitle,
                 body: `${displayName} is live!`
             }).show();
-            win.webContents.send('can-open-stream', channel);
-        } else if (!isLive && streamStatuses[channel]) {
+            // Open the stream if the user has enabled it
+            if (config.canOpenStreams) await shell.openExternal(`https://twitch.tv/${channel}`);
+        } else if (!isLive && streamStatuses[channel].isLive) {
             console.log(`${channel} is offline!`);
             new Notification({
                 title: notificationTitle,
@@ -220,17 +258,25 @@ async function processStreams(token) {
             }).show();
         }
 
-        streamStatuses[channel] = isLive;
+        streamStatuses[channel].isLive = isLive;
     }
+    win.webContents.send('update-streams', streamStatuses);
+    await isSyncing(false);
     console.log('Checked all channels')
 }
 
+/**
+ * Adds a channel to the config
+ * @param channel
+ * @returns {Promise<void>}
+ */
 async function addChannel(channel) {
     const channelName = channel.toLowerCase();
 
     // Check if the channel is already in the config
     if (config.channels.includes(channelName)) {
         console.log(`${channelName} is already in the config`);
+        return;
     }
 
     // Add the channel to the config
@@ -240,17 +286,22 @@ async function addChannel(channel) {
         console.error('Failed to save config');
     } else {
         console.log(`${channelName} added to config`);
-        win.webContents.send('update-stream-status', channel.toLowerCase(), false, null, 0);
         checkStreams();
     }
 }
 
+/**
+ * Deletes a channel from the config
+ * @param channel
+ * @returns {Promise<void>}
+ */
 async function deleteChannel(channel) {
     const channelName = channel.toLowerCase();
 
     // Check if the channel is in the config
     if (!config.channels.includes(channelName)) {
         console.log(`${channelName} is not in the config`);
+        return;
     }
 
     // Remove the channel from the config
@@ -261,6 +312,9 @@ async function deleteChannel(channel) {
     } else {
         console.log(`${channelName} removed from config`);
     }
+
+    // Stop checking the channel
+    delete streamStatuses[channelName];
 }
 
 async function apiError() {
@@ -268,18 +322,45 @@ async function apiError() {
     win.webContents.send('failed-credentials');
 }
 
-app.whenReady().then(() => {
-    if (!gotTheLock) {
-        app.quit(); // Don't allow multiple instances
-        return;
-    }
+/**
+ * Sends the syncing status to the frontend
+ * @param status
+ * @returns {Promise<void>}
+ */
+async function isSyncing(status) {
+    win.webContents.send('is-syncing', status);
+}
+
+// App Processes
+
+if (!gotTheLock) {
+    app.quit();
+} else {
+    app.on('second-instance', (event, commandLine, workingDirectory) => {
+        if (win) {
+            console.log('Second instance prevented');
+            win.show();
+        }
 
     nativeTheme.themeSource = config.themeSource;
+    });
+
+    if (win) app.setAsDefaultProtocolClient('streamlurker')
+
+    app.whenReady().then(() => {
+        nativeTheme.themeSource = config.themeSource;
 
     createWindow();
     createTray();
     console.log('App is ready');
 });
+        createWindow();
+        createTray();
+        console.log('App is ready');
+    });
+}
+
+
 
 app.on('before-quit', () => app.isQuitting = true);
 
@@ -316,9 +397,9 @@ ipcMain.on('save-twitch-credentials', (event, client_id, client_secret) => {
     });
 });
 
-ipcMain.on('check-streams', (event, channel) => {
-    console.log('Front end has requested to check streams');
-    checkStreams();
+ipcMain.on('fetch-streams', (event, channel) => {
+    console.log('Front end has requested to fetch streams');
+    win.webContents.send('update-streams', streamStatuses);
 });
 
 ipcMain.on('add-channel', (event, channel) => {
@@ -329,6 +410,11 @@ ipcMain.on('add-channel', (event, channel) => {
 ipcMain.on('delete-channel', (event, channel) => {
     console.log(`Front end has requested to delete ${channel}`);
     deleteChannel(channel);
+});
+
+ipcMain.on('change-open-streams', (event, status) => {
+    console.log(`Front end has requested to change open streams to ${status}`);
+    canOpenStreams(status);
 });
 
 ipcMain.on('open-link', (event, href) => {

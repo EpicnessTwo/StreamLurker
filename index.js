@@ -18,9 +18,6 @@ let config = {
 };
 const streamStatuses = {};
 const notificationTitle = 'Stream Lurker';
-const gotTheLock = app.requestSingleInstanceLock({
-    locked: true
-})
 const gotTheLock = app.requestSingleInstanceLock();
 
 /**

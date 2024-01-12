@@ -338,19 +338,11 @@ if (!gotTheLock) {
             console.log('Second instance prevented');
             win.show();
         }
-
-    nativeTheme.themeSource = config.themeSource;
     });
-
-    if (win) app.setAsDefaultProtocolClient('streamlurker')
 
     app.whenReady().then(() => {
         nativeTheme.themeSource = config.themeSource;
 
-    createWindow();
-    createTray();
-    console.log('App is ready');
-});
         createWindow();
         createTray();
         console.log('App is ready');

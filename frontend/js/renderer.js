@@ -39,6 +39,10 @@ ipcRenderer.on('is-syncing', (event, status) => {
     document.getElementById('syncing').classList.toggle('opacity-100', status);
 });
 
+ipcRenderer.on('update-available', (event, status) => {
+    document.getElementById('update-available').classList.remove('hidden');
+});
+
 document.getElementById('addChannelButton').addEventListener('click', () => {
     document.getElementById('add-channel').style.display = 'block';
     document.getElementById('channel_name').focus();

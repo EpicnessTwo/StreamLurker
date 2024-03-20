@@ -21,6 +21,38 @@ const notificationTitle = 'Stream Lurker';
 const gotTheLock = app.requestSingleInstanceLock();
 
 /**
+ * Checks for updates on GitHub
+ * @returns {Promise<boolean>}
+ */
+async function hasUpdate () {
+    const currentVersion = app.getVersion();
+    const url = 'https://api.github.com/repos/EpicnessTwo/StreamLurker/releases/latest';
+
+    try {
+        const response = await axios.get(url, {
+            headers: { 'User-Agent': 'StreamLurker' }
+        });
+
+        const latestVersion = response.data.tag_name;
+        console.log(`Current version: ${currentVersion}, Latest version: ${latestVersion}`);
+
+        // Compare versions, assuming semantic versioning
+        return latestVersion !== currentVersion;
+    } catch (error) {
+        console.error('Error checking for updates:', error);
+        return false;
+    }
+};
+
+async function checkForUpdate() {
+    const updateAvailable = await hasUpdate();
+    if (updateAvailable) {
+        console.log('Update available');
+        win.webContents.send('update-available');
+    }
+}
+
+/**
  * Loads the config from the store or config.json
  * @returns {Promise<boolean>}
  */
@@ -208,11 +240,18 @@ async function checkStreams(start) {
     if (!token) return;
 
     await processStreams(token);
+    await checkForUpdate();
 
     if (start) {
+        // Main stream checking loop
         setInterval(async () => {
             await processStreams(token);
-        }, 60000); // Check every minute
+        }, 60000);
+
+        // Check for updates loop
+        setInterval(async () => {
+            await checkForUpdate();
+        }, 3600000);
     }
 }
 

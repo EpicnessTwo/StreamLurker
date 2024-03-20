@@ -33,7 +33,8 @@ async function hasUpdate () {
             headers: { 'User-Agent': 'StreamLurker' }
         });
 
-        const latestVersion = response.data.tag_name;
+        const latestVersion = response.data.tag_name.replace('v', '');
+
         console.log(`Current version: ${currentVersion}, Latest version: ${latestVersion}`);
 
         // Compare versions, assuming semantic versioning

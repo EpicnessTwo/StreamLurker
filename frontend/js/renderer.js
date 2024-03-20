@@ -57,7 +57,7 @@ document.getElementById('submitChannel').addEventListener('click', () => {
     document.getElementById('add-channel').style.display = 'none';
 
     if (!document.getElementById(channel)) {
-        updateStreamTile(channel, false, '', 0, '', false);
+        updateStreamTile(channel, channel, false, '', 0, '', false);
         ipcRenderer.send('add-channel', channel);
     }
 });

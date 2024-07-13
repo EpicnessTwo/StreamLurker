@@ -219,17 +219,38 @@ async function getChannelInfo(channelName, token) {
             }
         });
 
+        // Fetch additional info
+        let additionalResponse = await axios.get(`https://api.twitch.tv/helix/search/channels?query=${channelName}`, {
+            headers: {
+                'Client-ID': config.clientId,
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        // The data of this will return an array of matching channels, we need to find the correct one
+        // This will be based on the `broadcaster_login` field
+        const additionalChannel = additionalResponse.data.data.find(c => c.broadcaster_login === channelName);
+
+        // Check to see if additionalChannel has been found
+        let gameName, streamTitle;
+        if (additionalChannel) {
+            gameName = additionalChannel.game_name;
+            streamTitle = additionalChannel.title;
+
+        }
+
+        // console.log(`Fetched info for ${channelName}`, userResponse.data, streamResponse.data, additionalChannel);
+
         const displayName = userResponse.data.data[0].display_name;
         const isLive = streamResponse.data.data.length > 0 && streamResponse.data.data[0].type === 'live';
         const profileImageUrl = userResponse.data.data[0].profile_image_url;
-        let viewerCount, gameName, isMature;
+        let viewerCount, isMature;
         if (isLive) {
             viewerCount = streamResponse.data.data[0].viewer_count || 0;
-            gameName = streamResponse.data.data[0].game_name;
             isMature = streamResponse.data.data[0].is_mature;
         }
 
-        return { displayName, isLive, profileImageUrl, viewerCount, gameName, isMature };
+        return { displayName, isLive, profileImageUrl, viewerCount, gameName, isMature, streamTitle };
     } catch (error) {
         console.error(`Error fetching info for ${channelName}:`, error);
         return { channelName, isLive: false, profileImageUrl: null, viewerCount: 0 };
@@ -270,13 +291,29 @@ async function canOpenStreams(status) {
 async function processStreams(token) {
     await isSyncing(true);
     for (const channel of config.channels) {
+        streamStatuses[channel] = streamStatuses[channel] || {};
         // Inside your setInterval in checkStreams function
-        const { displayName, isLive, profileImageUrl, viewerCount, gameName, isMature } = await getChannelInfo(channel, token);
+        const { displayName, isLive, profileImageUrl, viewerCount, gameName, isMature, streamTitle } = await getChannelInfo(channel, token);
+
+        let infoChanged;
+        // First check if the current stored gameName and streamTitle are undefined, if so, just set infoChanged to false
+        // Else check if the current gameName and streamTitle are different to the stored ones, if so, set infoChanged to true
+        if (streamStatuses[channel].gameName === undefined || streamStatuses[channel].streamTitle === undefined) {
+            infoChanged = false;
+        } else {
+            infoChanged = streamStatuses[channel].gameName !== gameName || streamStatuses[channel].streamTitle !== streamTitle;
+        }
+
+        console.log('Game Name: (before) ' + streamStatuses[channel].gameName + ' (after) ' + gameName);
+        console.log('Stream Title: (before) ' + streamStatuses[channel].streamTitle + ' (after) ' + streamTitle);
+        console.log('Info Changed: ' + infoChanged);
+
         streamStatuses[channel] = streamStatuses[channel] || {};
         streamStatuses[channel].displayName = displayName;
         streamStatuses[channel].profileImageUrl = profileImageUrl;
         streamStatuses[channel].viewerCount = viewerCount;
         streamStatuses[channel].gameName = gameName;
+        streamStatuses[channel].streamTitle = streamTitle;
         streamStatuses[channel].isMature = isMature;
 
         if (isLive && !streamStatuses[channel].isLive) {
@@ -292,6 +329,12 @@ async function processStreams(token) {
             new Notification({
                 title: notificationTitle,
                 body: `${displayName} is offline!`
+            }).show();
+        } else if (!isLive && infoChanged) {
+            console.log(`${channel} has just updated their stream info!`);
+            new Notification({
+                title: notificationTitle,
+                body: `${displayName} might be going live shortly!`
             }).show();
         }
 

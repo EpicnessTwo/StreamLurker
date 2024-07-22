@@ -3,6 +3,7 @@ import axios from 'axios';
 import { existsSync, writeFile } from 'fs';
 import Store from 'electron-store';
 import path from 'path';
+import * as fs from "fs";
 
 let win, tray;
 let config = {
@@ -19,6 +20,7 @@ let config = {
 const streamStatuses = {};
 const notificationTitle = 'Stream Lurker';
 const gotTheLock = app.requestSingleInstanceLock();
+const openTime = new Date();
 
 /**
  * Checks for updates on GitHub
@@ -35,12 +37,12 @@ async function hasUpdate () {
 
         const latestVersion = response.data.tag_name.replace('v', '');
 
-        console.log(`Current version: ${currentVersion}, Latest version: ${latestVersion}`);
+        await log('log', `Current version: ${currentVersion}, Latest version: ${latestVersion}`);
 
         // Compare versions, assuming semantic versioning
         return latestVersion !== currentVersion;
     } catch (error) {
-        console.error('Error checking for updates:', error);
+        await log('error', 'Error checking for updates:', error);
         return false;
     }
 };
@@ -48,7 +50,7 @@ async function hasUpdate () {
 async function checkForUpdate() {
     const updateAvailable = await hasUpdate();
     if (updateAvailable) {
-        console.log('Update available');
+        await log('log', 'Update available');
         win.webContents.send('update-available');
     }
 }
@@ -59,7 +61,7 @@ async function checkForUpdate() {
  */
 async function loadConfig() {
     if (app.isPackaged) {
-        console.log('Loading config from store');
+        await log('log', 'Loading config from store');
         const store = new Store();
         if (!store.has('config')) return false;
         config = store.get('config');
@@ -71,7 +73,7 @@ async function loadConfig() {
                 config = module.default;
                 return true;
             } catch (error) {
-                console.error('Failed to load config:', error);
+                await log('error', 'Failed to load config:', error);
                 return false;
             }
         } else {
@@ -87,7 +89,7 @@ async function loadConfig() {
 async function saveConfig() {
     config.initialised = true;
     if (app.isPackaged) {
-        console.log('Saving config to store');
+        await log('log', 'Saving config to store');
         const store = new Store();
         store.set('config', config);
         return true;
@@ -96,10 +98,20 @@ async function saveConfig() {
             await writeFile('./config.json', JSON.stringify(config, null, 4), 'utf8', () => { });
             return true;
         } catch (error) {
-            console.error('Failed to save config:', error);
+            await log('error', 'Failed to save config:', error);
             return false;
         }
     }
+}
+
+async function log(type, message, channel = false) {
+    fs.mkdirSync('./logs', { recursive: true });
+    const channelName = channel ? `(${channel}) ` : ' ';
+    const currentDate = new Date();
+    const logFile = `./logs/${openTime.toISOString().split('T')[0]}-${openTime.toTimeString().split(' ')[0].replaceAll(':', '-')}.log`;
+    const logMessage = `[${currentDate.toTimeString().split(' ')[0]}] [${type.toUpperCase()}] ${channelName}${message}\n`;
+    fs.appendFileSync(logFile, logMessage);
+    console[type](logMessage);
 }
 
 /**
@@ -186,10 +198,10 @@ async function getOAuthToken() {
                 grant_type: 'client_credentials'
             }
         });
-        console.log('OAuth token fetched successfully')
+        await log('log', 'OAuth token fetched successfully')
         return response.data.access_token;
     } catch (error) {
-        console.error('Error fetching OAuth token:', error);
+        await log('error', 'Error fetching OAuth token:', error);
         await apiError();
         return null;
     }
@@ -252,7 +264,7 @@ async function getChannelInfo(channelName, token) {
 
         return { displayName, isLive, profileImageUrl, viewerCount, gameName, isMature, streamTitle };
     } catch (error) {
-        console.error(`Error fetching info for ${channelName}:`, error);
+        await log('error', `Error fetching info for ${channelName}:` + error, channelName);
         return { channelName, isLive: false, profileImageUrl: null, viewerCount: 0 };
     }
 }
@@ -283,7 +295,7 @@ async function checkStreams(start) {
  * @returns {Promise<void>}
  */
 async function canOpenStreams(status) {
-    console.log('Setting canOpenStreams to', status);
+    await log('log', 'Setting canOpenStreams to' + status);
     config.canOpenStreams = status;
     saveConfig();
 }
@@ -296,17 +308,21 @@ async function processStreams(token) {
         const { displayName, isLive, profileImageUrl, viewerCount, gameName, isMature, streamTitle } = await getChannelInfo(channel, token);
 
         let infoChanged;
+        let infoUndefined = false
         // First check if the current stored gameName and streamTitle are undefined, if so, just set infoChanged to false
         // Else check if the current gameName and streamTitle are different to the stored ones, if so, set infoChanged to true
         if (streamStatuses[channel].gameName === undefined || streamStatuses[channel].streamTitle === undefined) {
             infoChanged = false;
+            infoUndefined = true;
         } else {
             infoChanged = streamStatuses[channel].gameName !== gameName || streamStatuses[channel].streamTitle !== streamTitle;
         }
 
-        console.log('Game Name: (before) ' + streamStatuses[channel].gameName + ' (after) ' + gameName);
-        console.log('Stream Title: (before) ' + streamStatuses[channel].streamTitle + ' (after) ' + streamTitle);
-        console.log('Info Changed: ' + infoChanged);
+        if (infoChanged || infoUndefined) {
+            await log('log', 'Game Name: (before) ' + streamStatuses[channel].gameName + ' (after) ' + gameName, channel);
+            await log('log', 'Stream Title: (before) ' + streamStatuses[channel].streamTitle + ' (after) ' + streamTitle, channel);
+            await log('log', 'Info Changed: ' + infoChanged, channel);
+        }
 
         streamStatuses[channel] = streamStatuses[channel] || {};
         streamStatuses[channel].displayName = displayName;
@@ -317,7 +333,7 @@ async function processStreams(token) {
         streamStatuses[channel].isMature = isMature;
 
         if (isLive && !streamStatuses[channel].isLive) {
-            console.log(`${channel} is live!`);
+            await log('log', `${channel} is live!`, channel);
             new Notification({
                 title: notificationTitle,
                 body: `${displayName} is live!`
@@ -325,13 +341,13 @@ async function processStreams(token) {
             // Open the stream if the user has enabled it
             if (config.canOpenStreams) await shell.openExternal(`https://twitch.tv/${channel}`);
         } else if (!isLive && streamStatuses[channel].isLive) {
-            console.log(`${channel} is offline!`);
+            await log('log', `${channel} is offline!`, channel);
             new Notification({
                 title: notificationTitle,
                 body: `${displayName} is offline!`
             }).show();
         } else if (!isLive && infoChanged) {
-            console.log(`${channel} has just updated their stream info!`);
+            await log('log', `${channel} has just updated their stream info!`, channel);
             new Notification({
                 title: notificationTitle,
                 body: `${displayName} might be going live shortly!`
@@ -342,7 +358,7 @@ async function processStreams(token) {
     }
     win.webContents.send('update-streams', streamStatuses);
     await isSyncing(false);
-    console.log('Checked all channels')
+    await log('log', 'Checked all channels')
 }
 
 /**
@@ -355,7 +371,7 @@ async function addChannel(channel) {
 
     // Check if the channel is already in the config
     if (config.channels.includes(channelName)) {
-        console.log(`${channelName} is already in the config`);
+        await log('log', `${channelName} is already in the config`);
         return;
     }
 
@@ -363,9 +379,9 @@ async function addChannel(channel) {
     config.channels.push(channelName);
     const success = await saveConfig();
     if (!success) {
-        console.error('Failed to save config');
+        await log('error', 'Failed to save config');
     } else {
-        console.log(`${channelName} added to config`);
+        await log('log', `${channelName} added to config`);
         checkStreams();
     }
 }
@@ -380,7 +396,7 @@ async function deleteChannel(channel) {
 
     // Check if the channel is in the config
     if (!config.channels.includes(channelName)) {
-        console.log(`${channelName} is not in the config`);
+        await log('log', `${channelName} is not in the config`);
         return;
     }
 
@@ -388,9 +404,9 @@ async function deleteChannel(channel) {
     config.channels = config.channels.filter(c => c !== channelName);
     const success = await saveConfig();
     if (!success) {
-        console.error('Failed to save config');
+        await log('error', 'Failed to save config');
     } else {
-        console.log(`${channelName} removed from config`);
+        await log('log', `${channelName} removed from config`);
     }
 
     // Stop checking the channel
@@ -418,7 +434,7 @@ if (!gotTheLock) {
 } else {
     app.on('second-instance', (event, commandLine, workingDirectory) => {
         if (win) {
-            console.log('Second instance prevented');
+            log('log', 'Second instance prevented');
             win.show();
         }
     });
@@ -428,7 +444,7 @@ if (!gotTheLock) {
 
         createWindow();
         createTray();
-        console.log('App is ready');
+        log('log', 'App is ready');
     });
 }
 
@@ -464,32 +480,32 @@ ipcMain.on('save-twitch-credentials', (event, client_id, client_secret) => {
             win.loadFile('frontend/index.html');
             checkStreams(true);
         } else {
-            console.error('Failed to save config');
+            log('error', 'Failed to save config');
         }
     });
 });
 
 ipcMain.on('fetch-streams', (event, channel) => {
-    console.log('Front end has requested to fetch streams');
+    log('log', 'Front end has requested to fetch streams');
     win.webContents.send('update-streams', streamStatuses);
 });
 
 ipcMain.on('add-channel', (event, channel) => {
-    console.log(`Front end has requested to add ${channel}`);
+    log('log', `Front end has requested to add ${channel}`);
     addChannel(channel);
 });
 
 ipcMain.on('delete-channel', (event, channel) => {
-    console.log(`Front end has requested to delete ${channel}`);
+    log('log', `Front end has requested to delete ${channel}`);
     deleteChannel(channel);
 });
 
 ipcMain.on('change-open-streams', (event, status) => {
-    console.log(`Front end has requested to change open streams to ${status}`);
+    log('log', `Front end has requested to change open streams to ${status}`);
     canOpenStreams(status);
 });
 
 ipcMain.on('open-link', (event, href) => {
-    console.log(`Front end has requested to open ${href}`);
+    log('log', `Front end has requested to open ${href}`);
     shell.openExternal(href);
 });

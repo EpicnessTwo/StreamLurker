@@ -22,6 +22,13 @@ const notificationTitle = 'Stream Lurker';
 const gotTheLock = app.requestSingleInstanceLock();
 const openTime = new Date();
 
+let iconPath = './frontend/images/lurker.png';
+if (app.isPackaged) {
+    iconPath = path.join(process.resourcesPath, 'app.asar', iconPath);
+}
+
+app.setName('StreamLurker');
+
 /**
  * Checks for updates on GitHub
  * @returns {Promise<boolean>}
@@ -160,12 +167,6 @@ function createWindow() {
  * Creates the tray icon
  */
 function createTray() {
-    let iconPath = './frontend/images/lurker.png';
-
-    if (app.isPackaged) {
-        iconPath = path.join(process.resourcesPath, 'app.asar', iconPath);
-    }
-
     tray = new Tray(iconPath); // Path to your tray icon
 
     const contextMenu = Menu.buildFromTemplate([
@@ -336,22 +337,31 @@ async function processStreams(token) {
             await log('log', `${channel} is live!`, channel);
             new Notification({
                 title: notificationTitle,
-                body: `${displayName} is live!`
-            }).show();
+                body: `${displayName} is live!`,
+                icon: profileImageUrl
+            })
+                .on('click', () => shell.openExternal(`https://twitch.tv/${channel}`))
+                .show();
             // Open the stream if the user has enabled it
             if (config.canOpenStreams) await shell.openExternal(`https://twitch.tv/${channel}`);
         } else if (!isLive && streamStatuses[channel].isLive) {
             await log('log', `${channel} is offline!`, channel);
             new Notification({
                 title: notificationTitle,
-                body: `${displayName} is offline!`
-            }).show();
+                body: `${displayName} is offline!`,
+                icon: profileImageUrl
+            })
+                .on('click', () => shell.openExternal(`https://twitch.tv/${channel}`))
+                .show();
         } else if (!isLive && infoChanged) {
             await log('log', `${channel} has just updated their stream info!`, channel);
             new Notification({
                 title: notificationTitle,
-                body: `${displayName} might be going live shortly!`
-            }).show();
+                body: `${displayName} might be going live shortly!`,
+                icon: profileImageUrl
+            })
+                .on('click', () => shell.openExternal(`https://twitch.tv/${channel}`))
+                .show();
         }
 
         streamStatuses[channel].isLive = isLive;

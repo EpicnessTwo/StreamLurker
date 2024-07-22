@@ -1,6 +1,6 @@
 {
   "name": "StreamLurker",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "A Twitch Stream Lurking Tool",
   "main": "index.js",
   "scripts": {
@@ -37,6 +37,7 @@
     "files": [
       "**/*",
       "!config.*",
+      "!logs",
       "!.*",
       "!**/*.md",
       "!**/*.{o,obj}",

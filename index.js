@@ -220,7 +220,7 @@ async function getChannelInfo(channelName, token) {
         });
 
         // Fetch additional info
-        let additionalResponse = await axios.get(`https://api.twitch.tv/helix/search/channels?query=${channelName}`, {
+        let additionalResponse = await axios.get(`https://api.twitch.tv/helix/channels?broadcaster_id=${userResponse.data.data[0].id}`, {
             headers: {
                 'Client-ID': config.clientId,
                 'Authorization': `Bearer ${token}`

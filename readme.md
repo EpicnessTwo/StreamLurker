@@ -1,5 +1,5 @@
 # StreamLurker - A Twitch Lurk Client
-![Stream Lurker Interface](.github/images/streamlurker.png)
+![Stream Lurker Interface](.github/images/streamlurkerbanner.png)
 
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/EpicnessTwo/StreamLurker)](https://github.com/EpicnessTwo/StreamLurker/releases)
 [![Electron Builder](https://github.com/EpicnessTwo/StreamLurker/actions/workflows/build.yml/badge.svg)](https://github.com/EpicnessTwo/StreamLurker/actions/workflows/publish.yml)

@@ -80,6 +80,13 @@ export function useTwitchChannel(clientId, accessToken) {
             const user = userData.data[0]
             if (!user) throw new Error('User not found')
 
+            const channelRes = await fetch(`https://api.twitch.tv/helix/channels?broadcaster_id=${user.id}`, {
+                headers
+            })
+            const channelData = await channelRes.json()
+            const channel = channelData.data[0]
+            if (!channel) throw new Error('Channel not found')
+
             const streamRes = await fetch(`https://api.twitch.tv/helix/streams?user_id=${user.id}`, {
                 headers
             })
@@ -89,11 +96,13 @@ export function useTwitchChannel(clientId, accessToken) {
             channelInfo.value = {
                 icon: user.profile_image_url,
                 channelName: user.display_name,
-                nowPlaying: stream ? stream.title : 'Offline',
+                title: channel.title ?? 'No Title',
+                game: channel.game_name ?? 'No Game',
                 viewerCount: stream ? stream.viewer_count : 0,
                 isLive: !!stream,
                 isMature: stream ? stream.is_mature : false
             }
+
 
             return channelInfo.value
         } catch (e) {

@@ -22,7 +22,8 @@
           Live
         </span>
       </div>
-      <p class="text-sm text-gray-300">{{ nowPlaying }}</p>
+      <p class="text-sm text-gray-300">{{ title }}</p>
+      <p class="text-xs text-gray-400">{{ game }}</p>
       <p class="text-xs text-gray-400" v-if="isLive">{{ viewerCount }} watching</p>
     </div>
 
@@ -55,7 +56,8 @@ import { openUrl } from '@tauri-apps/plugin-opener';
 const props = defineProps({
   icon: String,
   channelName: String,
-  nowPlaying: String,
+  title: String,
+  game: String,
   isLive: Boolean,
   viewerCount: Number
 })

@@ -39,7 +39,8 @@ interface ChannelInfo {
   isLive: boolean
   isMature: boolean
   channelName: string
-  nowPlaying: string | null
+  title: string | null
+  game: string | null
   viewerCount: number
 }
 
@@ -80,6 +81,18 @@ async function checkAllChannels() {
             )
           }
 
+        } else if (config.settings?.predictive && !info.isLive) {
+          if (
+              (info.title !== channels.value[channel]?.title) ||
+              (info.game !== channels.value[channel]?.game)
+          ) {
+            console.log(`Predictive notification for ${channel}:`, info)
+            await notify(
+                `${info.channelName} might be going live soon!`,
+                `${info.title || 'Unknown'}\n\n${info.game || 'Unknown'}`,
+                info.icon
+            )
+          }
         }
 
         channels.value[channel] = info

@@ -23,7 +23,7 @@ const emit = defineEmits(["update:modelValue", "next", "back"])
 const settingLabels = {
   autoOpen: 'Automatically open streams when they go live',
   notifications: 'Enable system notifications',
-  predictive: 'Predictive Go Live [Alpha]',
+  predictive: 'Predictive Go Live (Requires notifications)',
   startup: 'Open StreamLurker at startup'
 }
 </script>

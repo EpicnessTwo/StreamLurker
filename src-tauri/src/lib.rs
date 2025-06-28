@@ -12,6 +12,11 @@ async fn start_server(window: Window) -> Result<u16, String> {
         .map_err(|err| err.to_string())
 }
 
+#[command]
+async fn action_quit() {
+    std::process::exit(0);
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -22,10 +27,13 @@ pub fn run() {
             let _ = app.get_webview_window("main").expect("no main window").set_focus();
         }))
         .plugin(tauri_plugin_deep_link::init())
-//         .plugin(tauri_plugin_autostart::init())
+        .plugin(tauri_plugin_autostart::init(tauri_plugin_autostart::MacosLauncher::LaunchAgent, Some(vec![])))
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_oauth::init())
-        .invoke_handler(tauri::generate_handler![start_server])
+        .invoke_handler(tauri::generate_handler![
+            start_server,
+            action_quit
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

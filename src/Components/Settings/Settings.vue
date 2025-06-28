@@ -31,7 +31,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref } from 'vue'
+import { autostart } from '../../composables/useAutostart'
 
 const open = ref(false)
 const props = defineProps({
@@ -42,11 +43,15 @@ const emit = defineEmits(["update:settings"])
 const settingLabels = {
   autoOpen: 'Automatically open streams when they go live',
   notifications: 'Enable system notifications',
-  predictive: 'Predictive Go Live [Alpha]',
+  predictive: 'Predictive Go Live (Requires notifications)',
   startup: 'Open StreamLurker at startup'
 }
-function save() {
+
+async function save() {
   console.log('Saving settings:', props.modelValue.settings)
+
+  await autostart(props.modelValue.settings.startup)
+
   emit('update:settings', props.modelValue.settings)
   open.value = false
 }

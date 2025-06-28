@@ -13,12 +13,9 @@
         <button @click="open = false" class="text-red-400 hover:text-red-200">✖</button>
       </div>
 
-      <input
-          type="text"
-          v-model="channelName"
-          placeholder="Enter Twitch channel"
-          class="w-full bg-slate-700 text-white px-2 py-1 rounded mb-2"
-      />
+      <!-- ChannelSearch replaces both the input and the search -->
+      <ChannelSearch v-model="channelName" />
+
       <button
           @click="addChannel"
           class="w-full bg-blue-600 hover:bg-blue-500 text-white py-1 rounded"
@@ -31,6 +28,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import ChannelSearch from '../ChannelSearch.vue'
 
 const open = ref(false)
 const channelName = ref('')

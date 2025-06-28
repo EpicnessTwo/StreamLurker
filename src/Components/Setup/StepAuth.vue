@@ -51,7 +51,7 @@ async function startTwitchAuthFlow() {
       // Handle invalid URL case
     });
 
-    let authUrl = `https://id.twitch.tv/oauth2/authorize?client_id=${globalSettings.twitchClientId}&response_type=token&redirect_uri=http://localhost:${port}/auth/callback`;
+    let authUrl = `https://id.twitch.tv/oauth2/authorize?client_id=${globalSettings.twitchClientId}&response_type=token&redirect_uri=http://localhost:${port}/auth/callback&scope=user:read:follows&force_verify=true`;
 
     // Open the Twitch authentication URL
     await openUrl(authUrl);

@@ -42,19 +42,19 @@ import Channel from './Channel.vue'
 
 const props = defineProps({
   channels: {
-    type: Array,
+    type: Object,
     required: true
   }
 })
 
 // Separate live and offline channels
-const channelArray = computed(() => Object.values(props.channels))
+const channelList = computed(() => Object.values(props.channels))
 
 const liveChannels = computed(() =>
-    channelArray.value.filter((c) => c.isLive)
+    channelList.value.filter((c) => c.isLive)
 )
 const offlineChannels = computed(() =>
-    channelArray.value.filter((c) => !c.isLive)
+    channelList.value.filter((c) => !c.isLive)
 )
 
 function handleSettings(channel) {

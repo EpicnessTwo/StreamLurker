@@ -1,13 +1,20 @@
 <template>
   <div class="space-y-4">
     <p class="text-lg text-center">Enter channels you want to monitor</p>
-    <input type="text" v-model="newChannel" placeholder="Channel name" class="w-full px-4 py-2 bg-slate-700 rounded" @keyup.enter="addChannel" />
-    <button class="bg-blue-600 px-4 py-2 rounded text-white" @click="addChannel">Add</button>
+    <ChannelSearch v-model="newChannel" placeholder="Channel name" class="w-full rounded" @update:modelValue="newChannel = $event" @keyup.enter="addChannel"/>
+    <div class="flex justify-between items-center">
+      <button class="bg-blue-600 px-4 py-2 rounded text-white" @click="addChannel">Add</button>
+      <button class="bg-purple-600 px-4 py-2 rounded text-white" @click="fetchFollowedChannels">Fetch my Followed Channels</button>
+    </div>
 
     <ul class="space-y-2 mt-4">
-      <li v-for="(channel, index) in modelValue.channels" :key="index" class="flex justify-between items-center bg-slate-700 p-2 rounded">
-        <span>{{ channel }}</span>
-        <button @click="removeChannel(index)" class="text-red-400">Remove</button>
+      <li
+          v-for="channel in Object.values(modelValue.channels)"
+          :key="channel.name"
+          class="flex justify-between items-center bg-slate-700 p-2 rounded"
+      >
+        <span>{{ channel.channelName }}</span>
+        <button @click="removeChannel(channel.name)" class="text-red-400">Remove</button>
       </li>
     </ul>
 
@@ -19,7 +26,9 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, inject } from 'vue'
+import { useTwitchChannel } from "../../composables/useTwitchChannel.js";
+import ChannelSearch from "../ChannelSearch.vue";
 
 const props = defineProps({
   modelValue: Object
@@ -27,23 +36,69 @@ const props = defineProps({
 
 const emit = defineEmits(["update:modelValue", "next", "back"])
 const newChannel = ref("")
+const globalSettings = inject("globalSettings")
 
 function addChannel() {
-  if (newChannel.value.trim()) {
-    emit("update:modelValue", {
-      ...props.modelValue,
-      channels: [...props.modelValue.channels, newChannel.value.trim()]
-    })
-    newChannel.value = ""
-  }
-}
+  const name = newChannel.value.trim()
+  if (!name) return
 
-function removeChannel(index) {
-  const updated = [...props.modelValue.channels]
-  updated.splice(index, 1)
+  const updatedChannels = {
+    ...props.modelValue.channels,
+    [name.toLowerCase()]: {
+      channelName: name,
+      is_live: false
+    }
+  }
+
   emit("update:modelValue", {
     ...props.modelValue,
-    channels: updated
+    channels: updatedChannels
+  })
+
+  newChannel.value = ""
+}
+
+
+function removeChannel(name) {
+  const updatedChannels = { ...props.modelValue.channels }
+  delete updatedChannels[name]
+
+  emit("update:modelValue", {
+    ...props.modelValue,
+    channels: updatedChannels
   })
 }
+
+
+function fetchFollowedChannels() {
+  const { getFollowedChannelsOfAuthenticatedUser } = useTwitchChannel(
+      globalSettings.twitchClientId,
+      props.modelValue.twitch_token
+  )
+
+  getFollowedChannelsOfAuthenticatedUser()
+      .then(followed => {
+        const current = props.modelValue.channels || {}
+        const updated = { ...current }
+
+        for (const c of followed) {
+          const name = c.display_name.toLowerCase()
+          if (!updated[name]) {
+            updated[name] = {
+              name: c.display_name,
+              is_live: c.is_live
+            }
+          }
+        }
+
+        emit("update:modelValue", {
+          ...props.modelValue,
+          channels: updated
+        })
+      })
+      .catch(err => {
+        console.error("Error fetching followed channels:", err)
+      })
+}
+
 </script>

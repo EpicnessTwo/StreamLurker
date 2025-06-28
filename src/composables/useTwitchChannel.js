@@ -1,4 +1,3 @@
-// composables/useTwitchChannel.js
 import { ref } from 'vue'
 
 export function useTwitchChannel(clientId, accessToken) {
@@ -7,6 +6,8 @@ export function useTwitchChannel(clientId, accessToken) {
 
     const searchResults = ref([])
     const channelInfo = ref(null)
+    const authenticatedUser = ref(null)
+    const followedChannels = ref([])
 
     const headers = {
         'Client-ID': clientId,
@@ -34,7 +35,6 @@ export function useTwitchChannel(clientId, accessToken) {
         loading.value = true
         error.value = null
         try {
-            // Step 1: Get user ID from login name
             const userRes = await fetch(`https://api.twitch.tv/helix/users?login=${channelName}`, {
                 headers
             })
@@ -42,17 +42,15 @@ export function useTwitchChannel(clientId, accessToken) {
             const user = userData.data[0]
             if (!user) throw new Error('User not found')
 
-            // Step 2: Get stream info
             const streamRes = await fetch(`https://api.twitch.tv/helix/streams?user_id=${user.id}`, {
                 headers
             })
             const streamData = await streamRes.json()
             const stream = streamData.data[0]
 
-            // Compose channel info
             channelInfo.value = {
                 icon: user.profile_image_url,
-                name: user.display_name,
+                channelName: user.display_name,
                 nowPlaying: stream ? stream.title : 'Offline',
                 viewerCount: stream ? stream.viewer_count : 0,
                 isLive: !!stream,
@@ -69,12 +67,57 @@ export function useTwitchChannel(clientId, accessToken) {
         }
     }
 
+    const getFollowedChannelsOfAuthenticatedUser = async () => {
+        loading.value = true
+        error.value = null
+        followedChannels.value = []
+        authenticatedUser.value = null
+
+        try {
+            // Step 1: Get user info from token
+            const userRes = await fetch('https://api.twitch.tv/helix/users', {
+                headers
+            })
+            const userData = await userRes.json()
+            const user = userData.data?.[0]
+            if (!user) throw new Error('User not found')
+
+            authenticatedUser.value = {
+                id: user.id,
+                login: user.login,
+                displayName: user.display_name,
+                profileImage: user.profile_image_url,
+                description: user.description
+            }
+
+            // Step 2: Get followed channels
+            const followsRes = await fetch(`https://api.twitch.tv/helix/channels/followed?user_id=${user.id}&first=100`, {
+                headers
+            })
+            const followsData = await followsRes.json()
+
+            followedChannels.value = followsData.data.map(channel => ({
+                name: channel.broadcaster_name,
+            }))
+
+            return followedChannels.value
+        } catch (e) {
+            error.value = 'Failed to fetch followed channels'
+            console.error(e)
+        } finally {
+            loading.value = false
+        }
+    }
+
     return {
         loading,
         error,
         searchResults,
         channelInfo,
+        authenticatedUser,
+        followedChannels,
         searchChannel,
-        checkChannel
+        checkChannel,
+        getFollowedChannelsOfAuthenticatedUser
     }
 }

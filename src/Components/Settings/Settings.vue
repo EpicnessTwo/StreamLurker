@@ -6,7 +6,7 @@
 
     <div
         v-if="open"
-        class="absolute right-0 mt-2 w-64 bg-slate-800 text-white rounded-lg shadow-lg p-4 z-10"
+        class="fixed right-0 top-0 w-full h-full z-100 bg-slate-800/70 backdrop-blur-3xl backdrop-opacity-90 px-8 py-16"
     >
       <div class="flex justify-between items-center mb-2">
         <h2 class="text-lg font-bold">App Settings</h2>
@@ -14,23 +14,10 @@
       </div>
 
       <div class="space-y-4">
-        <div>
-          <label class="block mb-1 text-sm text-gray-300">Update Interval (ms)</label>
-          <input
-              type="number"
-              v-model="localSettings.refreshInterval"
-              class="w-full bg-slate-700 text-white px-2 py-1 rounded"
-          />
-        </div>
-
-        <div>
-          <label class="block mb-1 text-sm text-gray-300">Twitch Token</label>
-          <input
-              type="text"
-              v-model="localSettings.twitchToken"
-              class="w-full bg-slate-700 text-white px-2 py-1 rounded"
-          />
-        </div>
+        <label v-for="(label, key) in settingLabels" :key="key" class="flex justify-between items-center bg-slate-700 px-4 py-2 rounded">
+          <span>{{ label }}</span>
+          <input type="checkbox" v-model="modelValue.settings[key]" class="form-checkbox h-5 w-5 text-blue-500" />
+        </label>
 
         <button
             @click="save"
@@ -47,16 +34,20 @@
 import { ref, watch } from 'vue'
 
 const open = ref(false)
-const localSettings = ref({
-  refreshInterval: 10000,
-  twitchToken: ''
+const props = defineProps({
+  modelValue: Object
 })
+const emit = defineEmits(["update:settings"])
 
-// Emit updated settings back to parent
-const emit = defineEmits(['update:settings'])
-
+const settingLabels = {
+  autoOpen: 'Automatically open streams when they go live',
+  notifications: 'Enable system notifications',
+  predictive: 'Predictive Go Live [Alpha]',
+  startup: 'Open StreamLurker at startup'
+}
 function save() {
-  emit('update:settings', localSettings.value)
+  console.log('Saving settings:', props.modelValue.settings)
+  emit('update:settings', props.modelValue.settings)
   open.value = false
 }
 </script>

@@ -27,7 +27,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, inject, watch, onBeforeUnmount } from 'vue'
+import { ref, inject, watch, onMounted, onBeforeUnmount } from 'vue'
 import { getConfig } from '../composables/useConfig'
 import { useTwitchChannel } from '../composables/useTwitchChannel'
 
@@ -36,8 +36,7 @@ const props = defineProps<{
 }>()
 const emit = defineEmits(['update:modelValue'])
 
-const globalSettings = inject('globalSettings')
-const config = await getConfig('config')
+const globalSettings = inject('globalSettings') as any
 
 const channelName = ref(props.modelValue)
 watch(() => props.modelValue, (val) => {
@@ -47,18 +46,38 @@ watch(channelName, (val) => {
   emit('update:modelValue', val)
 })
 
-const { searchChannel, searchResults, error } = useTwitchChannel(
-    globalSettings.twitchClientId,
-    config.twitch_token
-)
+// We'll assign these once we have config
+const searchResults = ref<any[]>([])
+const error = ref<string | null>(null)
+let searchChannel: ((name: string) => void) | null = null
 
 let debounceTimer: number | undefined
+
+onMounted(async () => {
+  const config = await getConfig('config')
+
+  const twitch = useTwitchChannel(globalSettings.twitchClientId, config.twitch_token)
+
+  // ⚠️ Important: Point to the actual refs, not copy values
+  searchResults.value = []
+  error.value = null
+
+  watch(twitch.searchResults, (val) => {
+    searchResults.value = val
+  })
+
+  watch(twitch.error, (val) => {
+    error.value = val
+  })
+
+  searchChannel = twitch.searchChannel
+})
 
 function onSearch() {
   if (debounceTimer) clearTimeout(debounceTimer)
 
   debounceTimer = setTimeout(() => {
-    if (channelName.value.trim().length > 2) {
+    if (channelName.value.trim().length > 2 && searchChannel) {
       searchChannel(channelName.value.trim())
     }
   }, 300)

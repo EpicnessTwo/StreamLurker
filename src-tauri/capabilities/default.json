@@ -8,6 +8,7 @@
     "opener:default",
     "store:default",
     "opener:allow-open-url",
-    "oauth:allow-start"
+    "oauth:allow-start",
+    "notification:default"
   ]
 }

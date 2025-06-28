@@ -2,11 +2,6 @@
 use tauri::{Manager, command, Emitter, Window};
 use tauri_plugin_oauth::start;
 
-#[tauri::command]
-fn greet(name: &str) -> String {
-    format!("Hello, {}! You've been greeted from Rust!", name)
-}
-
 #[command]
 async fn start_server(window: Window) -> Result<u16, String> {
     start(move |url| {
@@ -30,7 +25,7 @@ pub fn run() {
 //         .plugin(tauri_plugin_autostart::init())
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_oauth::init())
-        .invoke_handler(tauri::generate_handler![greet, start_server])
+        .invoke_handler(tauri::generate_handler![start_server])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

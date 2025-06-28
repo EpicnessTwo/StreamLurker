@@ -13,5 +13,7 @@ export async function getConfig(key) {
 
 export async function setConfig(key, value) {
   if (!store) await initStore();
-  return store.set(key, value);
+  store.set(key, value);
+
+  return store.get(key);
 }

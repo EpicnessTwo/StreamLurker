@@ -8,7 +8,7 @@ import Main from "./Main.vue";
 
 // Tray Handling
 
-await createTray().then((tray) => {
+createTray().then((tray) => {
 
 })
 

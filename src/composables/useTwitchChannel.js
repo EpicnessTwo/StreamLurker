@@ -14,6 +14,44 @@ export function useTwitchChannel(clientId, accessToken) {
         'Authorization': `Bearer ${accessToken}`
     }
 
+    const check = async () => {
+        loading.value = true
+        error.value = null
+        try {
+            const res = await fetch('https://api.twitch.tv/helix/users', {
+                headers
+            })
+
+            if (!res.ok) {
+                throw new Error(`Authentication failed: ${res.status} ${res.statusText}`)
+            }
+
+            const data = await res.json()
+            const user = data.data?.[0]
+
+            if (!user) {
+                throw new Error('Invalid token or user not found')
+            }
+
+            // Optionally store this info right away
+            authenticatedUser.value = {
+                id: user.id,
+                login: user.login,
+                displayName: user.display_name,
+                profileImage: user.profile_image_url,
+                description: user.description
+            }
+
+            return true
+        } catch (e) {
+            error.value = 'Authentication failed'
+            // console.error(e)
+            // throw e // re-throw to ensure calling code can catch it
+        } finally {
+            loading.value = false
+        }
+    }
+
     const searchChannel = async (query) => {
         loading.value = true
         error.value = null
@@ -25,7 +63,7 @@ export function useTwitchChannel(clientId, accessToken) {
             searchResults.value = data.data || []
         } catch (e) {
             error.value = 'Failed to search Twitch channel'
-            console.error(e)
+            // console.error(e)
         } finally {
             loading.value = false
         }
@@ -60,7 +98,7 @@ export function useTwitchChannel(clientId, accessToken) {
             return channelInfo.value
         } catch (e) {
             error.value = 'Failed to fetch Twitch channel data'
-            console.error(e)
+            // console.error(e)
             channelInfo.value = null
         } finally {
             loading.value = false
@@ -103,7 +141,7 @@ export function useTwitchChannel(clientId, accessToken) {
             return followedChannels.value
         } catch (e) {
             error.value = 'Failed to fetch followed channels'
-            console.error(e)
+            // console.error(e)
         } finally {
             loading.value = false
         }
@@ -116,6 +154,7 @@ export function useTwitchChannel(clientId, accessToken) {
         channelInfo,
         authenticatedUser,
         followedChannels,
+        check,
         searchChannel,
         checkChannel,
         getFollowedChannelsOfAuthenticatedUser

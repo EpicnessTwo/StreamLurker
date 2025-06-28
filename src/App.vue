@@ -10,6 +10,12 @@
         <Settings v-model="config" @update:settings="handleSettingsUpdate" />
       </div>
     </div>
+    <div v-if="reauthenticate" class="fixed right-0 top-0 w-full h-full z-100 bg-slate-800/70 backdrop-blur-3xl backdrop-opacity-90 px-8 py-16 items-center justify-center flex">
+      <StepAuth
+        v-model="config"
+        @update:modelValue="updateAuthentication"
+        ></StepAuth>
+    </div>
 
     <ChannelList :channels="channels" />
     <SyncIndicator :syncing="syncing" />
@@ -26,6 +32,7 @@ import ChannelAdd from './Components/Settings/ChannelAdd.vue'
 import Settings from './Components/Settings/Settings.vue'
 import SyncIndicator from './Components/SyncIndicator.vue'
 import {openUrl} from "@tauri-apps/plugin-opener";
+import StepAuth from "./Components/Setup/StepAuth.vue";
 
 interface ChannelInfo {
   icon: string | null
@@ -38,6 +45,7 @@ interface ChannelInfo {
 
 const channels = ref<Record<string, ChannelInfo>>({})
 const syncing = ref(false)
+const reauthenticate = ref(false)
 let twitch: ReturnType<typeof useTwitchChannel>
 let config: any = {}
 const globalSettings = inject('globalSettings')
@@ -76,8 +84,12 @@ async function checkAllChannels() {
 
         channels.value[channel] = info
       }
+
+      if (twitch.error.value) await authCheck()
     } catch (e) {
       console.warn(`Failed to fetch channel info for ${channel}:`, e)
+
+      await authCheck()
     }
   }
 
@@ -105,6 +117,27 @@ async function handleSettingsUpdate(newSettings: any) {
   config.settings = newSettings
   config = await setConfig('config', config)
   await checkAllChannels()
+}
+
+async function authCheck() {
+  console.log('Checking Twitch authentication status...')
+  twitch.check().then((response) => {
+    if (response) return;
+
+    if (twitch.error.value === 'Authentication failed') {
+      reauthenticate.value = true
+      console.warn('Reauthentication required')
+    } else {
+      console.error('Error checking channel:', twitch.error)
+    }
+  })
+}
+
+function updateAuthentication(newConfig: any) {
+  console.log('Updating authentication with new config:', newConfig)
+  setConfig('config', newConfig).then(() => {
+    window.location.reload()
+  })
 }
 
 onMounted(async () => {

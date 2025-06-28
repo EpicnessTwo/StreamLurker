@@ -1,7 +1,9 @@
 name: 'build-tauri-artifacts'
 
 on:
-  workflow_dispatch:
+  push:
+    branches:
+      - v2-dev
 
 jobs:
   build-tauri:

@@ -40,7 +40,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: lts/*
-          cache: 'yarn'
+          cache: 'bun'
 
       - name: install Rust stable
         uses: dtolnay/rust-toolchain@stable
@@ -53,10 +53,10 @@ jobs:
           workspaces: './src-tauri -> target'
 
       - name: install frontend dependencies
-        run: yarn install
+        run: bun install
 
       - name: build tauri app
-        run: yarn tauri build ${{ matrix.args }}
+        run: bun tauri build ${{ matrix.args }}
 
       - name: upload artifacts
         uses: actions/upload-artifact@v4

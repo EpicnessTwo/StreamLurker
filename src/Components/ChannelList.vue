@@ -15,6 +15,7 @@
             :is-live="channel.isLive"
             :viewer-count="channel.viewerCount"
             @settings="handleSettings(channel)"
+            @delete="handleDelete(channel.channelName)"
         />
       </div>
     </div>
@@ -29,10 +30,10 @@
             :type="channel.type"
             :icon="channel.icon"
             :channel-name="channel.channelName"
-            :now-playing="channel.nowPlaying"
             :is-live="channel.isLive"
             :viewer-count="channel.viewerCount"
             @settings="handleSettings(channel)"
+            @delete="handleDelete(channel.channelName)"
         />
       </div>
     </div>
@@ -50,7 +51,8 @@ const props = defineProps({
   }
 })
 
-// Separate live and offline channels
+const emit = defineEmits(['delete'])
+
 const channelList = computed(() => Object.values(props.channels))
 
 const liveChannels = computed(() =>
@@ -62,5 +64,9 @@ const offlineChannels = computed(() =>
 
 function handleSettings(channel) {
   console.log(`Settings clicked for ${channel.channelName}`)
+}
+
+function handleDelete(name) {
+  emit('delete', name)
 }
 </script>

@@ -17,7 +17,7 @@
         ></StepAuth>
     </div>
 
-    <ChannelList :channels="channels" />
+    <ChannelList :channels="channels" @delete="handleDeleteChannel"/>
     <SyncIndicator :syncing="syncing" />
   </div>
 </template>
@@ -125,6 +125,14 @@ async function handleAddChannel(newChannel: string) {
     await checkAllChannels()
   }
 }
+
+function handleDeleteChannel(channelName: string) {
+  console.log('Deleting channel:', channelName)
+  delete channels.value[channelName.toLowerCase()]
+  delete config.channels[channelName.toLowerCase()]
+  setConfig('config', config)
+}
+
 
 async function handleSettingsUpdate(newSettings: any) {
   console.log('Settings updated:', newSettings)

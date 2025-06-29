@@ -31,30 +31,46 @@
       <p class="text-xs text-gray-400" v-if="isLive">{{ viewerCount }} watching</p>
     </div>
 
-    <!-- Settings Icon -->
-    <button
-        class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
-        @click.stop="$emit('settings')"
-    >
-      <svg
-          xmlns="http://www.w3.org/2000/svg"
-          class="h-5 w-5 text-gray-400 hover:text-white"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
+    <!-- Settings Icon and Dropdown -->
+    <div class="absolute top-2 right-2 group/settings">
+      <button
+          class="opacity-0 group-hover:opacity-100 transition-opacity"
+          @click.stop="toggleMenu"
       >
-        <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M12 4v1m0 14v1m8-8h1M4 12H3m15.364-6.364l.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z"
-        />
-      </svg>
-    </button>
+        <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-5 w-5 text-gray-400 hover:text-white"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+        >
+          <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 4v1m0 14v1m8-8h1M4 12H3m15.364-6.364l.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z"
+          />
+        </svg>
+      </button>
+
+      <div
+          v-if="menuOpen"
+          class="absolute right-0 mt-2 w-32 bg-gray-800 rounded-md shadow-lg z-50"
+          @click.stop
+      >
+        <button
+            class="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-gray-700"
+            @click="$emit('delete')"
+        >
+          Delete Channel
+        </button>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
+import { onMounted, ref } from 'vue'
 import { openUrl } from '@tauri-apps/plugin-opener';
 import Checkmark from "./Checkmark.vue";
 
@@ -68,11 +84,21 @@ const props = defineProps({
   viewerCount: Number
 })
 
-const emit = defineEmits(['settings'])
+const emit = defineEmits(['settings', 'delete'])
+
+const menuOpen = ref(false)
+
+function toggleMenu() {
+  menuOpen.value = !menuOpen.value
+}
 
 function goToChannel() {
   if (props.channelName) {
     openUrl(`https://twitch.tv/${props.channelName}`)
   }
 }
+
+onMounted(() => {
+  document.addEventListener('click', () => (menuOpen.value = false))
+})
 </script>

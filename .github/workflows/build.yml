@@ -1,6 +1,12 @@
 name: Builds
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - v1
+  pull_request:
+    branches:
+      - v1
 
 jobs:
   electron-linux:

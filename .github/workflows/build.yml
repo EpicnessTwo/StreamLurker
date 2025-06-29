@@ -3,7 +3,7 @@ name: 'build-tauri-artifacts'
 on:
   push:
     branches:
-      - v2-dev
+      - v2
 
 jobs:
   build-tauri:

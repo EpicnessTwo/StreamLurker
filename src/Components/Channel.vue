@@ -1,6 +1,6 @@
 <template>
   <div
-      class="flex items-center p-3 rounded-xl bg-gray-800 hover:bg-gray-700 transition relative group cursor-pointer"
+      class="flex items-center p-3 rounded-xl bg-slate-800/75 hover:bg-slate-700/90 transition relative group cursor-pointer"
       @click="goToChannel"
   >
     <!-- Channel Icon -->

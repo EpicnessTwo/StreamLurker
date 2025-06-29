@@ -1,5 +1,20 @@
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-use tauri::{Manager, command, Emitter, Window};
+use tauri::{
+    Manager,
+    command,
+    Emitter,
+    Window,
+    menu::{
+        Menu,
+        MenuItem
+    },
+    tray::{
+        TrayIconBuilder,
+        TrayIconEvent,
+        MouseButton,
+        MouseButtonState
+    }
+};
 use tauri_plugin_oauth::start;
 
 #[command]
@@ -10,11 +25,6 @@ async fn start_server(window: Window) -> Result<u16, String> {
         let _ = window.emit("redirect_uri", url);
     })
         .map_err(|err| err.to_string())
-}
-
-#[command]
-async fn action_quit() {
-    std::process::exit(0);
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -32,8 +42,63 @@ pub fn run() {
         .plugin(tauri_plugin_oauth::init())
         .invoke_handler(tauri::generate_handler![
             start_server,
-            action_quit
         ])
+        .setup(|app| {
+            let menu_vanity = MenuItem::with_id(app, "vanity", "StreamLurker", false, None::<&str>)?;
+            let menu_repo = MenuItem::with_id(app, "repo", "Open Repository", true, None::<&str>)?;
+            let menu_issues = MenuItem::with_id(app, "issues", "Issue Tracker", true, None::<&str>)?;
+            let menu_quit = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
+
+            let menu_spacer = MenuItem::with_id(app, "spacer", "", false, None::<&str>)?;
+
+            let menu = Menu::with_items(app, &[
+                &menu_vanity,
+                &menu_repo,
+                &menu_issues,
+                &menu_spacer,
+                &menu_quit,
+            ])?;
+
+            TrayIconBuilder::new()
+                .menu(&menu)
+                .icon(app.default_window_icon().unwrap().clone())
+                .on_tray_icon_event(|tray, event| match event {
+                    TrayIconEvent::Click {
+                        button: MouseButton::Left,
+                        button_state: MouseButtonState::Up,
+                        ..
+                    } => {
+                        let app = tray.app_handle();
+                        if let Some(window) = app.get_webview_window("main") {
+                            let _ = window.show();
+                            let _ = window.set_focus();
+                        }
+                    }
+                    _ => {}
+                })
+                .on_menu_event(|app, event| match event.id.as_ref() {
+                    "quit" => {
+                        let _ = app.exit(0);
+                    }
+                    "repo" => {
+                        tauri_plugin_opener::open_url("https://github.com/EpicnessTwo/StreamLurker", None::<&str>)
+                            .expect("Could not open URL");
+                    }
+                    "issues" => {
+                        tauri_plugin_opener::open_url("https://github.com/EpicnessTwo/StreamLurker/issues", None::<&str>)
+                            .expect("Could not open URL");
+                    }
+                    _ => {}
+                })
+                .build(app)?;
+            Ok(())
+        })
+        .on_window_event(|window, event| {
+            if let tauri::WindowEvent::CloseRequested { api, .. } = event {
+                api.prevent_close();
+                let _ = window.hide();
+            }
+        })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

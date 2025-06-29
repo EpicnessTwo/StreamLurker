@@ -7,6 +7,7 @@
         <Channel
             v-for="(channel, index) in liveChannels"
             :key="`live-${index}`"
+            :type="channel.type"
             :icon="channel.icon"
             :channel-name="channel.channelName"
             :title="channel.title"
@@ -25,6 +26,7 @@
         <Channel
             v-for="(channel, index) in offlineChannels"
             :key="`offline-${index}`"
+            :type="channel.type"
             :icon="channel.icon"
             :channel-name="channel.channelName"
             :now-playing="channel.nowPlaying"

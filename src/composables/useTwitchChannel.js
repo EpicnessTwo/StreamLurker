@@ -94,6 +94,7 @@ export function useTwitchChannel(clientId, accessToken) {
             const stream = streamData.data[0]
 
             channelInfo.value = {
+                type: user.broadcaster_type,
                 icon: user.profile_image_url,
                 channelName: user.display_name,
                 title: channel.title ?? 'No Title',

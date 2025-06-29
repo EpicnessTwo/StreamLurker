@@ -35,6 +35,7 @@ import {openUrl} from "@tauri-apps/plugin-opener";
 import StepAuth from "./Components/Setup/StepAuth.vue";
 
 interface ChannelInfo {
+  type: string | null
   icon: string | null
   isLive: boolean
   isMature: boolean

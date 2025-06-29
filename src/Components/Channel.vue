@@ -14,13 +14,17 @@
     <!-- Info Section -->
     <div class="flex-1">
       <div class="flex items-center gap-2">
-        <h2 class="text-white font-semibold text-lg">{{ channelName }}</h2>
-        <span
-            v-if="isLive"
-            class="bg-red-600 text-white text-xs font-bold px-2 py-0.5 rounded-full uppercase"
-        >
-          Live
-        </span>
+        <h2 class="text-white font-semibold text-lg w-full">
+          {{ channelName }}
+          <Checkmark
+              v-if="type !== ''"
+              :class="{
+                  'text-green-500': type === 'affiliate',
+                  'text-purple-500': type === 'partner',
+                }"
+              :title="type === 'affiliate' ? 'Twitch Affiliate' : type === 'partner' ? 'Twitch Partner' : ''"
+          />
+        </h2>
       </div>
       <p class="text-sm text-gray-300">{{ title }}</p>
       <p class="text-xs text-gray-400">{{ game }}</p>
@@ -52,8 +56,10 @@
 
 <script setup>
 import { openUrl } from '@tauri-apps/plugin-opener';
+import Checkmark from "./Checkmark.vue";
 
 const props = defineProps({
+  type: String,
   icon: String,
   channelName: String,
   title: String,

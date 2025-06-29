@@ -56,10 +56,15 @@ const emit = defineEmits(['delete'])
 const channelList = computed(() => Object.values(props.channels))
 
 const liveChannels = computed(() =>
-    channelList.value.filter((c) => c.isLive)
+    channelList.value
+        .filter((c) => c.isLive)
+        .sort((a, b) => a.channelName.localeCompare(b.channelName))
 )
+
 const offlineChannels = computed(() =>
-    channelList.value.filter((c) => !c.isLive)
+    channelList.value
+        .filter((c) => !c.isLive)
+        .sort((a, b) => a.channelName.localeCompare(b.channelName))
 )
 
 function handleSettings(channel) {

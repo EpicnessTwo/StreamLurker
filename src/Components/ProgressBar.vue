@@ -6,5 +6,5 @@
   </div>
 </template>
 <script setup>
-const props = defineProps({ step: Number, total: Number })
+defineProps({ step: Number, total: Number })
 </script>

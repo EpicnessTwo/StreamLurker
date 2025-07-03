@@ -28,7 +28,7 @@ import ChannelList from './Components/ChannelList.vue'
 import ChannelAdd from './Components/Settings/ChannelAdd.vue'
 import Settings from './Components/Settings/Settings.vue'
 import SyncIndicator from './Components/SyncIndicator.vue'
-import {openUrl} from "@tauri-apps/plugin-opener";
+import { openUrl } from "@tauri-apps/plugin-opener";
 import StepAuth from "./Components/Setup/StepAuth.vue";
 
 interface ChannelInfo {
@@ -64,8 +64,7 @@ async function checkAllChannels() {
           if (info.isLive) {
             await notify(
                 `${info.channelName} is now live!`,
-                `Now playing: ${info.nowPlaying || 'Unknown'}`,
-                info.icon
+                `Now playing: ${info.game || 'Unknown'}`,
                 info.icon,
                 config.settings?.sounds ? 'up' : null
             )

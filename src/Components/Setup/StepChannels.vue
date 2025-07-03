@@ -1,10 +1,9 @@
 <template>
   <div class="space-y-4">
     <p class="text-lg text-center">Enter channels you want to monitor</p>
-    <ChannelSearch v-model="newChannel" placeholder="Channel name" class="w-full rounded" @update:modelValue="newChannel = $event" @keyup.enter="addChannel"/>
+    <ChannelSearch class="w-full rounded" @add-channel="addChannel"/>
     <div class="flex justify-between items-center">
-      <button class="bg-blue-600 px-4 py-2 rounded text-white" @click="addChannel">Add</button>
-      <button class="bg-purple-600 px-4 py-2 rounded text-white" @click="fetchFollowedChannels">Fetch my Followed Channels</button>
+<!--      <button class="bg-purple-600 px-4 py-2 rounded text-white" @click="fetchFollowedChannels">Fetch my Followed Channels</button>-->
     </div>
 
     <ul class="space-y-2 mt-4">
@@ -38,8 +37,7 @@ const emit = defineEmits(["update:modelValue", "next", "back"])
 const newChannel = ref("")
 const globalSettings = inject("globalSettings")
 
-function addChannel() {
-  const name = newChannel.value.trim()
+function addChannel(name) {
   if (!name) return
 
   const updatedChannels = {

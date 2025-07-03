@@ -4,8 +4,9 @@
         type="text"
         v-model="channelName"
         @input="onSearch"
+        @keyup.enter="selectChannel(channelName)"
         placeholder="Enter Twitch channel"
-        class="w-full bg-slate-700 text-white px-2 py-1 rounded mb-2"
+        class="w-full bg-slate-700 text-white px-3 py-2 rounded mb-2"
     />
 
     <ul
@@ -31,20 +32,11 @@ import { ref, inject, watch, onMounted, onBeforeUnmount } from 'vue'
 import { getConfig } from '../composables/useConfig'
 import { useTwitchChannel } from '../composables/useTwitchChannel'
 
-const props = defineProps<{
-  modelValue: string
-}>()
-const emit = defineEmits(['update:modelValue'])
+const emit = defineEmits(['update:modelValue', 'addChannel'])
 
 const globalSettings = inject('globalSettings') as any
 
-const channelName = ref(props.modelValue)
-watch(() => props.modelValue, (val) => {
-  if (val !== channelName.value) channelName.value = val
-})
-watch(channelName, (val) => {
-  emit('update:modelValue', val)
-})
+const channelName = ref()
 
 // We'll assign these once we have config
 const searchResults = ref<any[]>([])
@@ -84,8 +76,10 @@ function onSearch() {
 }
 
 function selectChannel(name: string) {
-  channelName.value = name
+  if (!name) return
+  channelName.value = null
   searchResults.value = [] // Hide list after selection
+  emit('addChannel', name)
 }
 
 onBeforeUnmount(() => {

@@ -14,14 +14,9 @@
       </div>
 
       <!-- ChannelSearch replaces both the input and the search -->
-      <ChannelSearch v-model="channelName" />
-
-      <button
-          @click="addChannel"
-          class="w-full bg-blue-600 hover:bg-blue-500 text-white py-1 rounded"
-      >
-        Add
-      </button>
+      <ChannelSearch
+          @add-channel="addChannel"
+      />
     </div>
   </div>
 </template>
@@ -34,7 +29,11 @@ const open = ref(false)
 const channelName = ref('')
 const emit = defineEmits(['add'])
 
-function addChannel() {
+function addChannel(channel: string) {
+  if (channel) {
+    channelName.value = channel
+  }
+
   if (channelName.value.trim()) {
     emit('add', channelName.value.trim())
     channelName.value = ''

@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-8">
+  <div class="space-y-8 mb-10">
     <!-- Live Channels Section -->
     <div v-if="liveChannels.length">
       <h2 class="text-xl font-bold mb-4">Live Channels</h2>

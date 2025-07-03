@@ -3,9 +3,6 @@
     <div class="flex justify-between items-center mb-6">
       <h1 class="text-2xl font-bold">StreamLurker</h1>
       <div class="flex gap-2">
-        <button @click="notify('Test Notification', 'This is a test notification!')" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded">
-          Test Notification
-        </button>
         <ChannelAdd @add="handleAddChannel" />
         <Settings v-model="config" @update:settings="handleSettingsUpdate" />
       </div>

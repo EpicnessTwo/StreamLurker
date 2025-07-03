@@ -1,4 +1,4 @@
-name: 'build-tauri-artifacts'
+name: 'build-streamlurker'
 
 on:
   push:
@@ -6,7 +6,8 @@ on:
       - v2
 
 jobs:
-  build-tauri:
+  build:
+    if: startsWith(github.event.head_commit.message, 'Release ')
     permissions:
       contents: write
     strategy:

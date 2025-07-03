@@ -13,7 +13,7 @@
           class="flex justify-between items-center bg-slate-700 p-2 rounded"
       >
         <span>{{ channel.channelName }}</span>
-        <button @click="removeChannel(channel.name)" class="text-red-400">Remove</button>
+        <button @click="removeChannel(channel.channelName)" class="text-red-400">Remove</button>
       </li>
     </ul>
 
@@ -59,7 +59,7 @@ function addChannel(name) {
 
 function removeChannel(name) {
   const updatedChannels = { ...props.modelValue.channels }
-  delete updatedChannels[name]
+  delete updatedChannels[name.toLowerCase()]
 
   emit("update:modelValue", {
     ...props.modelValue,

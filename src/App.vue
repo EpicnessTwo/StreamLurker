@@ -173,7 +173,7 @@ onMounted(async () => {
 
   await checkAllChannels()
 
-  setInterval(checkAllChannels, 10000)
+  setInterval(checkAllChannels, 30000)
 })
 </script>
 

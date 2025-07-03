@@ -35,7 +35,8 @@ const formData = ref({
     autoOpen: false,
     notifications: false,
     predictive: false,
-    startup: false
+    startup: false,
+    sounds: false
   }
 })
 
@@ -50,7 +51,8 @@ onMounted(async () => {
       autoOpen: initialConfig.settings?.autoOpen || false,
       notifications: initialConfig.settings?.notifications || false,
       predictive: initialConfig.settings?.predictive || false,
-      startup: initialConfig.settings?.startup || false
+      startup: initialConfig.settings?.startup || false,
+      sounds: initialConfig.settings?.sounds || false,
     }
   } else {
     setConfig('config', formData.value)

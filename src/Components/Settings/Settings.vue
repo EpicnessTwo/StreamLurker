@@ -94,6 +94,7 @@ const emit = defineEmits(["update:settings"])
 const settingLabels = {
   autoOpen: 'Automatically open streams when they go live',
   notifications: 'Enable system notifications',
+  sounds: 'Enable notification sounds',
   predictive: 'Predictive Go Live (Requires notifications)',
   startup: 'Open StreamLurker at startup'
 }

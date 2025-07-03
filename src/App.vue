@@ -66,6 +66,8 @@ async function checkAllChannels() {
                 `${info.channelName} is now live!`,
                 `Now playing: ${info.nowPlaying || 'Unknown'}`,
                 info.icon
+                info.icon,
+                config.settings?.sounds ? 'up' : null
             )
 
             if (config.settings?.autoOpen) {
@@ -75,7 +77,8 @@ async function checkAllChannels() {
             await notify(
                 `${info.channelName} is no longer live.`,
                 'Stream has ended.',
-                info.icon
+                info.icon,
+                config.settings?.sounds ? 'down' : null
             )
           }
 
@@ -88,7 +91,8 @@ async function checkAllChannels() {
             await notify(
                 `${info.channelName} might be going live soon!`,
                 `${info.title || 'Unknown'}\n\n${info.game || 'Unknown'}`,
-                info.icon
+                info.icon,
+                config.settings?.sounds ? 'predict' : null
             )
           }
         }

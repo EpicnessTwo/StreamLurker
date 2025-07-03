@@ -60,7 +60,7 @@
       >
         <button
             class="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-gray-700"
-            @click="$emit('delete')"
+            @click="deleteChannel"
         >
           Delete Channel
         </button>
@@ -96,6 +96,11 @@ function goToChannel() {
   if (props.channelName) {
     openUrl(`https://twitch.tv/${props.channelName}`)
   }
+}
+
+function deleteChannel() {
+  menuOpen.value = false
+  emit('delete')
 }
 
 onMounted(() => {

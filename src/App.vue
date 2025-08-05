@@ -3,6 +3,18 @@
     <div class="flex justify-between items-center mb-6">
       <h1 class="text-2xl font-bold">StreamLurker</h1>
       <div class="flex gap-2">
+        <button 
+          @click="toggleNotificationPanel"
+          class="relative p-2 text-slate-400 hover:text-white transition-colors rounded-lg hover:bg-slate-800"
+          title="Show notifications"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0"></path>
+          </svg>
+          <span v-if="unreadCount > 0" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+            {{ unreadCount > 99 ? '99+' : unreadCount }}
+          </span>
+        </button>
         <ChannelAdd @add="handleAddChannel" />
         <Settings v-model="config" @update:settings="handleSettingsUpdate" />
       </div>
@@ -16,6 +28,12 @@
 
     <ChannelList :channels="channels" @delete="handleDeleteChannel"/>
     <SyncIndicator :syncing="syncing" />
+    
+    <!-- Notification Panel -->
+    <NotificationPanel 
+      :isOpen="showNotificationPanel" 
+      @close="showNotificationPanel = false" 
+    />
   </div>
 </template>
 
@@ -23,11 +41,13 @@
 import { useTwitchChannel } from './composables/useTwitchChannel'
 import { getConfig, setConfig } from './composables/useConfig'
 import { notify } from './composables/useNotification'
-import { inject, onMounted, ref } from 'vue'
+import { useNotificationStore } from './composables/useNotificationStore.js'
+import { inject, onMounted, ref, computed } from 'vue'
 import ChannelList from './Components/ChannelList.vue'
 import ChannelAdd from './Components/Settings/ChannelAdd.vue'
 import Settings from './Components/Settings/Settings.vue'
 import SyncIndicator from './Components/SyncIndicator.vue'
+import NotificationPanel from './Components/NotificationPanel.vue'
 import { openUrl } from "@tauri-apps/plugin-opener";
 import StepAuth from "./Components/Setup/StepAuth.vue";
 
@@ -45,9 +65,18 @@ interface ChannelInfo {
 const channels = ref<Record<string, ChannelInfo>>({})
 const syncing = ref(false)
 const reauthenticate = ref(false)
+const showNotificationPanel = ref(false)
 let twitch: ReturnType<typeof useTwitchChannel>
 let config: any = {}
 const globalSettings = inject('globalSettings')
+
+// Notification store for unread count
+const { getUnreadCount } = useNotificationStore()
+const unreadCount = computed(() => getUnreadCount())
+
+function toggleNotificationPanel() {
+  showNotificationPanel.value = !showNotificationPanel.value
+}
 
 async function checkAllChannels() {
   if (!config?.channels || !twitch) return

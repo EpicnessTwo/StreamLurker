@@ -17,7 +17,7 @@ async function initStore() {
   try {
     // Try to use Tauri store
     store = await load('store.json');
-  } catch (error) {
+  } catch {
     console.warn('Tauri store not available, using mock store for development');
     store = mockStore;
   }

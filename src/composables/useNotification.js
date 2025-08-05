@@ -34,21 +34,27 @@ export async function notify(title, body, icon = null, sound = null) {
     } catch (error) {
         console.warn('Failed to send OS notification (expected in browser mode):', error.message);
         // Fall back to browser notification if possible
-        if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
-            new Notification(title, { body, icon });
+        if (typeof window !== 'undefined' && typeof window.Notification !== 'undefined' && window.Notification.permission === 'granted') {
+            new window.Notification(title, { body, icon });
         }
     }
 
     try {
         switch (sound) {
             case 'up':
-                await new Audio(StreamUp).play();
+                if (typeof window !== 'undefined') {
+                    await new window.Audio(StreamUp).play();
+                }
                 break;
             case 'down':
-                await new Audio(StreamDown).play();
+                if (typeof window !== 'undefined') {
+                    await new window.Audio(StreamDown).play();
+                }
                 break;
             case 'predict':
-                await new Audio(Predict).play();
+                if (typeof window !== 'undefined') {
+                    await new window.Audio(Predict).play();
+                }
                 break;
             default:
                 break;

@@ -211,18 +211,18 @@ onMounted(async () => {
   // Don't actually initialize Twitch API in demo mode
   // twitch = useTwitchChannel(globalSettings.twitchClientId, twitchToken)
 
-  // Add some demo notifications to show the panel
+  // Add some demo notifications after a delay to show the panel functionality
   setTimeout(() => {
     notify('Ninja is now live!', 'Now playing: Fortnite', null, 'up');
-  }, 1000);
-  
-  setTimeout(() => {
-    notify('Shroud might be going live soon!', 'Valorant stream starting soon', null, 'predict');
   }, 2000);
   
   setTimeout(() => {
+    notify('Shroud might be going live soon!', 'Valorant stream starting soon', null, 'predict');
+  }, 4000);
+  
+  setTimeout(() => {
     notify('xQc is no longer live.', 'Stream has ended.', null, 'down');
-  }, 3000);
+  }, 6000);
 
   // Don't run the actual channel checking in demo mode
   // await checkAllChannels()

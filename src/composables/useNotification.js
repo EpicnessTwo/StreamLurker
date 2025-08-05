@@ -32,7 +32,11 @@ export async function notify(title, body, icon = null, sound = null) {
             icon: icon
         });
     } catch (error) {
-        console.error('Failed to send notification:', error);
+        console.warn('Failed to send OS notification (expected in browser mode):', error.message);
+        // Fall back to browser notification if possible
+        if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+            new Notification(title, { body, icon });
+        }
     }
 
     try {

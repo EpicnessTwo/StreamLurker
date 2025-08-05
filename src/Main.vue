@@ -20,7 +20,10 @@ onMounted(async () => {
   if (config && config.finished) {
     componentToShow.value = App
   } else {
-    componentToShow.value = Setup
+    // For development, we can bypass setup if needed
+    // Skip setup to demonstrate notification panel
+    componentToShow.value = App
+    // componentToShow.value = Setup
   }
 })
 </script>

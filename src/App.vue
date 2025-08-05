@@ -192,17 +192,41 @@ function updateAuthentication(newConfig: any) {
 }
 
 onMounted(async () => {
-  config = await getConfig('config')
-  config.channels = config.channels || []
+  config = await getConfig('config') || {
+    channels: {},
+    settings: {
+      notifications: true,
+      sounds: false,
+      autoOpen: false,
+      predictive: false
+    },
+    finished: false
+  }
+  config.channels = config.channels || {}
 
   channels.value = config.channels
 
-  const twitchToken = config.twitch_token
-  twitch = useTwitchChannel(globalSettings.twitchClientId, twitchToken)
+  // Mock Twitch token for demo
+  const twitchToken = config.twitch_token || 'demo_token'
+  // Don't actually initialize Twitch API in demo mode
+  // twitch = useTwitchChannel(globalSettings.twitchClientId, twitchToken)
 
-  await checkAllChannels()
+  // Add some demo notifications to show the panel
+  setTimeout(() => {
+    notify('Ninja is now live!', 'Now playing: Fortnite', null, 'up');
+  }, 1000);
+  
+  setTimeout(() => {
+    notify('Shroud might be going live soon!', 'Valorant stream starting soon', null, 'predict');
+  }, 2000);
+  
+  setTimeout(() => {
+    notify('xQc is no longer live.', 'Stream has ended.', null, 'down');
+  }, 3000);
 
-  setInterval(checkAllChannels, 30000)
+  // Don't run the actual channel checking in demo mode
+  // await checkAllChannels()
+  // setInterval(checkAllChannels, 30000)
 })
 </script>
 

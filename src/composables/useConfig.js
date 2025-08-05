@@ -2,8 +2,25 @@ import { load } from '@tauri-apps/plugin-store';
 
 let store = null;
 
+// Mock store for browser development
+const mockStore = {
+  data: {},
+  async get(key) {
+    return this.data[key] || null;
+  },
+  async set(key, value) {
+    this.data[key] = value;
+  }
+};
+
 async function initStore() {
-  store = await load('store.json');
+  try {
+    // Try to use Tauri store
+    store = await load('store.json');
+  } catch (error) {
+    console.warn('Tauri store not available, using mock store for development');
+    store = mockStore;
+  }
 }
 
 export async function getConfig(key) {

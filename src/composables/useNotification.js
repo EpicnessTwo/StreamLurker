@@ -1,10 +1,30 @@
 import { sendNotification } from "@tauri-apps/plugin-notification";
+import { useNotificationStore } from "./useNotificationStore.js";
 
 import StreamUp from "../assets/sounds/stream_up.mp3";
 import StreamDown from "../assets/sounds/stream_down.mp3";
 import Predict from "../assets/sounds/predict.mp3";
 
 export async function notify(title, body, icon = null, sound = null) {
+    // Store notification in our local store
+    const { addNotification } = useNotificationStore();
+    
+    // Determine notification type based on sound
+    let type = 'info';
+    switch (sound) {
+        case 'up':
+            type = 'live';
+            break;
+        case 'down':
+            type = 'offline';
+            break;
+        case 'predict':
+            type = 'predictive';
+            break;
+    }
+    
+    addNotification(title, body, icon, type);
+    
     try {
         await sendNotification({
             title: title,
@@ -12,19 +32,29 @@ export async function notify(title, body, icon = null, sound = null) {
             icon: icon
         });
     } catch (error) {
-        console.error('Failed to send notification:', error);
+        console.warn('Failed to send OS notification (expected in browser mode):', error.message);
+        // Fall back to browser notification if possible
+        if (typeof window !== 'undefined' && typeof window.Notification !== 'undefined' && window.Notification.permission === 'granted') {
+            new window.Notification(title, { body, icon });
+        }
     }
 
     try {
         switch (sound) {
             case 'up':
-                await new Audio(StreamUp).play();
+                if (typeof window !== 'undefined') {
+                    await new window.Audio(StreamUp).play();
+                }
                 break;
             case 'down':
-                await new Audio(StreamDown).play();
+                if (typeof window !== 'undefined') {
+                    await new window.Audio(StreamDown).play();
+                }
                 break;
             case 'predict':
-                await new Audio(Predict).play();
+                if (typeof window !== 'undefined') {
+                    await new window.Audio(Predict).play();
+                }
                 break;
             default:
                 break;

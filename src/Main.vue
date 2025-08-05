@@ -13,14 +13,17 @@ import { getConfig } from './composables/useConfig.js'
 const componentToShow = ref(null)
 
 onMounted(async () => {
-  const config = await getConfig('config')
+  config = await getConfig('config')
 
   if (config) console.log(config)
 
   if (config && config.finished) {
     componentToShow.value = App
   } else {
-    componentToShow.value = Setup
+    // For development, we can bypass setup if needed
+    // Uncomment line below to skip setup for demo
+    componentToShow.value = App
+    // componentToShow.value = Setup
   }
 })
 </script>

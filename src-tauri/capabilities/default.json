@@ -10,6 +10,7 @@
     "opener:allow-open-url",
     "oauth:allow-start",
     "notification:default",
-    "core:app:allow-default-window-icon"
+    "core:app:allow-default-window-icon",
+    "dialog:default"
   ]
 }

@@ -9,6 +9,7 @@
         "@tauri-apps/api": "^2",
         "@tauri-apps/plugin-autostart": "~2",
         "@tauri-apps/plugin-deep-link": "~2",
+        "@tauri-apps/plugin-dialog": "~2",
         "@tauri-apps/plugin-http": "~2",
         "@tauri-apps/plugin-notification": "~2",
         "@tauri-apps/plugin-opener": "^2",
@@ -239,6 +240,8 @@
     "@tauri-apps/plugin-autostart": ["@tauri-apps/plugin-autostart@2.5.0", "", { "dependencies": { "@tauri-apps/api": "^2.6.0" } }, "sha512-smSt0vydfVB950AeYRbO2S/c01SZrgMVg4FOrFLQLom0R0amsu/8zYaxgttriBdxcofjBZuHv4hmROBQIBVXmA=="],
 
     "@tauri-apps/plugin-deep-link": ["@tauri-apps/plugin-deep-link@2.4.0", "", { "dependencies": { "@tauri-apps/api": "^2.6.0" } }, "sha512-scFldWG5FDqLgbHauS5FtsE563Bo00sqYhhWTYwNzIOZFdOJtNY6tBqzqGJ8I1aehPtEVA0LcTNaq8fmDQbDGg=="],
+
+    "@tauri-apps/plugin-dialog": ["@tauri-apps/plugin-dialog@2.3.2", "", { "dependencies": { "@tauri-apps/api": "^2.6.0" } }, "sha512-cNLo9YeQSC0MF4IgXnotHsqEgJk72MBZLXmQPrLA95qTaaWiiaFQ38hIMdZ6YbGUNkr3oni3EhU+AD5jLHcdUA=="],
 
     "@tauri-apps/plugin-http": ["@tauri-apps/plugin-http@2.5.0", "", { "dependencies": { "@tauri-apps/api": "^2.6.0" } }, "sha512-l4M2DUIsOBIMrbj4dJZwrB4mJiB7OA/2Tj3gEbX2fjq5MOpETklJPKfDvzUTDwuq4lIKCKKykz8E8tpOgvi0EQ=="],
 

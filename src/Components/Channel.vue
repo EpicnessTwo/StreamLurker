@@ -55,9 +55,15 @@
 
       <div
           v-if="menuOpen"
-          class="absolute right-0 mt-2 w-32 bg-gray-800 rounded-md shadow-lg z-50"
+          class="absolute right-0 mt-2 w-40 bg-gray-800 rounded-md shadow-lg z-50"
           @click.stop
       >
+        <button
+            class="w-full text-left px-4 py-2 text-sm text-blue-400 hover:bg-gray-700"
+            @click="openChannelSettings"
+        >
+          Channel Settings
+        </button>
         <button
             class="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-gray-700"
             @click="deleteChannel"
@@ -84,7 +90,7 @@ const props = defineProps({
   viewerCount: Number
 })
 
-const emit = defineEmits(['settings', 'delete'])
+const emit = defineEmits(['settings', 'delete', 'channel-settings'])
 
 const menuOpen = ref(false)
 
@@ -101,6 +107,11 @@ function goToChannel() {
 function deleteChannel() {
   menuOpen.value = false
   emit('delete')
+}
+
+function openChannelSettings() {
+  menuOpen.value = false
+  emit('channel-settings')
 }
 
 onMounted(() => {

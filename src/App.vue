@@ -14,8 +14,17 @@
         ></StepAuth>
     </div>
 
-    <ChannelList :channels="channels" @delete="handleDeleteChannel"/>
+    <ChannelList :channels="channels" @delete="handleDeleteChannel" @channel-settings="handleChannelSettings"/>
     <SyncIndicator :syncing="syncing" />
+
+    <!-- Channel Settings Modal -->
+    <ChannelSettings 
+        v-if="channelSettingsOpen"
+        :channel-name="selectedChannel?.channelName"
+        :model-value="getChannelSettings(selectedChannel?.channelName)"
+        @close="closeChannelSettings"
+        @save="saveChannelSettings"
+    />
   </div>
 </template>
 
@@ -27,6 +36,7 @@ import { inject, onMounted, ref } from 'vue'
 import ChannelList from './Components/ChannelList.vue'
 import ChannelAdd from './Components/Settings/ChannelAdd.vue'
 import Settings from './Components/Settings/Settings.vue'
+import ChannelSettings from './Components/Settings/ChannelSettings.vue'
 import SyncIndicator from './Components/SyncIndicator.vue'
 import { openUrl } from "@tauri-apps/plugin-opener";
 import StepAuth from "./Components/Setup/StepAuth.vue";
@@ -45,6 +55,8 @@ interface ChannelInfo {
 const channels = ref<Record<string, ChannelInfo>>({})
 const syncing = ref(false)
 const reauthenticate = ref(false)
+const channelSettingsOpen = ref(false)
+const selectedChannel = ref(null)
 let twitch: ReturnType<typeof useTwitchChannel>
 let config: any = {}
 const globalSettings = inject('globalSettings')
@@ -61,23 +73,35 @@ async function checkAllChannels() {
       if (info) {
         // Notification Checks
         if (config.settings?.notifications && info.isLive !== channels.value[channel]?.isLive) {
+          // Get channel-specific sound configuration
+          const channelConfig = config.channels[channel] || {}
+          const channelSounds = channelConfig.sounds || {}
+          
           if (info.isLive) {
+            // Use custom live sound if available, otherwise default
+            const soundToPlay = config.settings?.sounds ? 
+              (channelSounds.live || 'up') : null
+              
             await notify(
                 `${info.channelName} is now live!`,
                 `Now playing: ${info.game || 'Unknown'}`,
                 info.icon,
-                config.settings?.sounds ? 'up' : null
+                soundToPlay
             )
 
             if (config.settings?.autoOpen) {
               await openUrl(`https://www.twitch.tv/${info.channelName}`)
             }
           } else {
+            // Use custom offline sound if available, otherwise default
+            const soundToPlay = config.settings?.sounds ? 
+              (channelSounds.offline || 'down') : null
+              
             await notify(
                 `${info.channelName} is no longer live.`,
                 'Stream has ended.',
                 info.icon,
-                config.settings?.sounds ? 'down' : null
+                soundToPlay
             )
           }
 
@@ -87,11 +111,20 @@ async function checkAllChannels() {
               (info.game !== channels.value[channel]?.game)
           ) {
             console.log(`Predictive notification for ${channel}:`, info)
+            
+            // Get channel-specific sound configuration
+            const channelConfig = config.channels[channel] || {}
+            const channelSounds = channelConfig.sounds || {}
+            
+            // Use custom predictive sound if available, otherwise default
+            const soundToPlay = config.settings?.sounds ? 
+              (channelSounds.predict || 'predict') : null
+              
             await notify(
                 `${info.channelName} might be going live soon!`,
                 `${info.title || 'Unknown'}\n\n${info.game || 'Unknown'}`,
                 info.icon,
-                config.settings?.sounds ? 'predict' : null
+                soundToPlay
             )
           }
         }
@@ -160,6 +193,47 @@ function updateAuthentication(newConfig: any) {
   setConfig('config', newConfig).then(() => {
     window.location.reload()
   })
+}
+
+function handleChannelSettings(channel: any) {
+  console.log('Opening channel settings for:', channel.channelName)
+  selectedChannel.value = channel
+  channelSettingsOpen.value = true
+}
+
+function closeChannelSettings() {
+  channelSettingsOpen.value = false
+  selectedChannel.value = null
+}
+
+async function saveChannelSettings(channelSettings: any) {
+  if (!selectedChannel.value) return
+  
+  const channelName = selectedChannel.value.channelName.toLowerCase()
+  console.log('Saving channel settings for:', channelName, channelSettings)
+  
+  // Ensure the channel config exists
+  if (!config.channels[channelName]) {
+    config.channels[channelName] = {
+      channelName: selectedChannel.value.channelName,
+      isLive: false,
+    }
+  }
+  
+  // Save the channel-specific settings
+  config.channels[channelName] = {
+    ...config.channels[channelName],
+    ...channelSettings
+  }
+  
+  config = await setConfig('config', config)
+  closeChannelSettings()
+}
+
+function getChannelSettings(channelName: string) {
+  if (!channelName) return {}
+  const channelConfig = config.channels?.[channelName.toLowerCase()]
+  return channelConfig || {}
 }
 
 onMounted(async () => {

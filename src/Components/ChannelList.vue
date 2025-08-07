@@ -16,6 +16,7 @@
             :viewer-count="channel.viewerCount"
             @settings="handleSettings(channel)"
             @delete="handleDelete(channel.channelName)"
+            @channel-settings="handleChannelSettings(channel)"
         />
       </div>
     </div>
@@ -34,6 +35,7 @@
             :viewer-count="channel.viewerCount"
             @settings="handleSettings(channel)"
             @delete="handleDelete(channel.channelName)"
+            @channel-settings="handleChannelSettings(channel)"
         />
       </div>
     </div>
@@ -51,7 +53,7 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['delete'])
+const emit = defineEmits(['delete', 'channel-settings'])
 
 const channelList = computed(() => Object.values(props.channels))
 
@@ -69,6 +71,10 @@ const offlineChannels = computed(() =>
 
 function handleSettings(channel) {
   console.log(`Settings clicked for ${channel.channelName}`)
+}
+
+function handleChannelSettings(channel) {
+  emit('channel-settings', channel)
 }
 
 function handleDelete(name) {

@@ -29,6 +29,13 @@
                 Browse
               </button>
               <button
+                  @click="previewSound('live')"
+                  class="px-4 py-2 bg-green-600 hover:bg-green-500 rounded text-white"
+                  title="Preview sound"
+              >
+                ▶️
+              </button>
+              <button
                   v-if="sounds.live"
                   @click="clearSoundFile('live')"
                   class="px-4 py-2 bg-red-600 hover:bg-red-500 rounded text-white"
@@ -56,6 +63,13 @@
                 Browse
               </button>
               <button
+                  @click="previewSound('offline')"
+                  class="px-4 py-2 bg-green-600 hover:bg-green-500 rounded text-white"
+                  title="Preview sound"
+              >
+                ▶️
+              </button>
+              <button
                   v-if="sounds.offline"
                   @click="clearSoundFile('offline')"
                   class="px-4 py-2 bg-red-600 hover:bg-red-500 rounded text-white"
@@ -81,6 +95,13 @@
                   class="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded text-white"
               >
                 Browse
+              </button>
+              <button
+                  @click="previewSound('predict')"
+                  class="px-4 py-2 bg-green-600 hover:bg-green-500 rounded text-white"
+                  title="Preview sound"
+              >
+                ▶️
               </button>
               <button
                   v-if="sounds.predict"
@@ -120,6 +141,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { open } from '@tauri-apps/plugin-dialog'
+import { notify } from '../../composables/useNotification.js'
 
 const props = defineProps({
   channelName: String,
@@ -155,6 +177,37 @@ async function selectSoundFile(type) {
 
 function clearSoundFile(type) {
   sounds.value[type] = ''
+}
+
+async function previewSound(type) {
+  let soundToPlay = null
+  
+  // Use custom sound if available, otherwise use default
+  if (sounds.value[type]) {
+    soundToPlay = sounds.value[type]
+  } else {
+    // Map to default sounds
+    switch (type) {
+      case 'live':
+        soundToPlay = 'up'
+        break
+      case 'offline':
+        soundToPlay = 'down'
+        break
+      case 'predict':
+        soundToPlay = 'predict'
+        break
+    }
+  }
+  
+  if (soundToPlay) {
+    await notify(
+      `${type.charAt(0).toUpperCase() + type.slice(1)} Preview`,
+      `Playing ${type} notification sound`,
+      null,
+      soundToPlay
+    )
+  }
 }
 
 function save() {
